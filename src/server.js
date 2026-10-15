@@ -53,6 +53,7 @@ const MIME = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
+  '.avif': 'image/avif',
   '.ico': 'image/x-icon',
   '.json': 'application/json; charset=utf-8',
   '.woff2': 'font/woff2',
@@ -522,10 +523,36 @@ route('POST', '/admin/orders/:id/status', async (ctx) => {
 // Images + static
 // ---------------------------------------------------------------------------
 
-function imageRoute(ctx, name) {
-  const clean = String(name).replace(/\.svg$/i, '').replace(/-\d+$/, '');
-  const label = clean.replace(/-/g, ' ');
-  const svg = productImageSvg(clean, label);
+// Extensions recognised for real (user-supplied) product photos.
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
+const IMAGES_DIR = join(ROOT, 'public', 'images');
+
+// Serves a real photo from public/images/<name>.<ext> when it exists, otherwise
+// falls back to the generated SVG placeholder. To replace any demo image, just
+// drop a file in public/images/ named after the product slug (or hero-kamilla,
+// cat-<Category>, <slug>-2, <slug>-3 for thumbnails) - no code changes needed.
+async function imageRoute(ctx, name) {
+  const raw = String(name).replace(/\.svg$/i, '');
+  const base = raw.replace(/[^a-zA-Z0-9._-]/g, ''); // sanitise: strip path separators
+
+  for (const ext of IMAGE_EXTENSIONS) {
+    const filePath = join(IMAGES_DIR, base + ext);
+    if (!filePath.startsWith(IMAGES_DIR)) continue;
+    if (existsSync(filePath)) {
+      const data = await readFile(filePath);
+      ctx.res.writeHead(200, {
+        'Content-Type': MIME[ext] || 'application/octet-stream',
+        'Cache-Control': 'public, max-age=3600',
+      });
+      ctx.res.end(data);
+      return;
+    }
+  }
+
+  // Fallback: generated SVG placeholder.
+  const labelName = base.replace(/-\d+$/, '');
+  const label = labelName.replace(/-/g, ' ');
+  const svg = productImageSvg(labelName, label);
   ctx.res.writeHead(200, {
     'Content-Type': 'image/svg+xml',
     'Cache-Control': 'public, max-age=86400',

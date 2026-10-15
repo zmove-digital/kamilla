@@ -220,10 +220,30 @@ Log in at `/admin`:
 ### Using real product photos
 
 The demo generates on-brand SVG placeholder images automatically at
-`/img/<product-slug>.svg`. To use real photos, drop files into
-`public/images/` and update the `img src` in
-`src/views/pages.js` (`productCard` and `productPage`) to point at
-`/images/your-file.jpg`.
+`/img/<name>.svg`. To replace any of them with a real photo you **don't need
+to change any code** — just drop a file into `public/images/` named after the
+image you want to replace. The store serves the real file when it exists and
+falls back to the generated placeholder when it doesn't.
+
+Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.avif` (pick one; the
+first match wins in that order). Recommended dimensions: **1200×1500 (4:5)**
+for products, **1600×900** for the hero.
+
+| File to create in `public/images/`      | Replaces                                  |
+| --------------------------------------- | ----------------------------------------- |
+| `seamless-clip-in-extensions.jpg`       | Main photo of that product (card + page)  |
+| `seamless-clip-in-extensions-2.jpg`     | 2nd gallery thumbnail on the product page |
+| `seamless-clip-in-extensions-3.jpg`     | 3rd gallery thumbnail on the product page |
+| `cat-Clip-In.jpg`                       | Category tile (categories: `Clip-In`, `Tape-In`, `Bundles`, `Ponytail`, `Care`, `Accessories`) |
+| `hero-kamilla.jpg`                      | Home-page hero image                      |
+
+The names are the product **slugs** (the part after `/product/` in the URL).
+Current slugs: `seamless-clip-in-extensions`, `tape-in-extensions`,
+`luxe-sew-in-bundles`, `wrap-ponytail`, `clip-in-bangs`,
+`silk-repair-hair-kit`, `extension-brush`, `satin-sleep-bonnet`.
+
+You can also add a brand-new product from the admin panel and give it any
+slug, then place a matching file (`<slug>.jpg`) in `public/images/`.
 
 ---
 
@@ -249,7 +269,7 @@ public/
 scripts/
   seed.js            # npm run seed
   reset.js           # npm run reset
-  test.js            # npm test  (52 tests)
+  test.js            # npm test  (54 tests)
 data/                # SQLite database (created at runtime, git-ignored)
 ```
 
