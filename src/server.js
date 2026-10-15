@@ -42,8 +42,8 @@ import {
 } from './views/admin.js';
 import { createCheckoutSession, verifyWebhook, stripeRequest } from './lib/stripe.js';
 
-const CART_COOKIE = 'aurelle_cart';
-const ADMIN_COOKIE = 'aurelle_admin';
+const CART_COOKIE = 'kamilla_cart';
+const ADMIN_COOKIE = 'kamilla_admin';
 
 const MIME = {
   '.css': 'text/css; charset=utf-8',
@@ -536,7 +536,7 @@ function imageRoute(ctx, name) {
 route('GET', '/favicon.svg', (ctx) => {
   ctx.res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' });
   ctx.res.end(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="14" fill="#1a1a1a"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="34" fill="#c9a27e">A</text></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="14" fill="#1a1a1a"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="34" fill="#c9a27e">K</text></svg>`
   );
 });
 

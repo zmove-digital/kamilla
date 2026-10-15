@@ -328,7 +328,7 @@ export function clearCart(cartId) {
 function generateOrderNumber() {
   const ts = Date.now().toString(36).toUpperCase();
   const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `AR-${ts}-${rnd}`;
+  return `KM-${ts}-${rnd}`;
 }
 
 export function shippingForSubtotal(subtotalCents) {

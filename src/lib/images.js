@@ -16,7 +16,7 @@ export function productImageSvg(seed, label = '', width = 900, height = 1100) {
       .join('')
       .toUpperCase() || 'A'
   );
-  const brand = 'AURELLE';
+  const brand = 'KAMILLA';
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}">
   <defs>

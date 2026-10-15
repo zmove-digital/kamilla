@@ -1,7 +1,7 @@
 import { db, createProduct, upsertVariant, migrate } from './db.js';
 
 // ---------------------------------------------------------------------------
-// Brand: AURELLE - Luxury Hair Extensions
+// Brand: KAMILLA - Luxury Hair Extensions
 // Full demo catalog. Edit freely - the store reads everything from the DB.
 // ---------------------------------------------------------------------------
 

@@ -1,10 +1,10 @@
-# AURELLE — a complete online store
+# KAMILLA — a complete online store
 
 A full e-commerce storefront **with zero npm dependencies**. It runs on Node.js
 built-ins only (`node:sqlite`, `node:http`, `fetch`, `crypto`), so there is
 nothing to install, no build step, and no framework churn.
 
-Brand in the demo is **AURELLE** (luxury hair extensions) but everything —
+Brand in the demo is **KAMILLA** (luxury hair extensions) but everything —
 name, copy, products, prices — is editable from the admin panel or the seed file.
 
 ---
@@ -140,21 +140,21 @@ Render, Railway, or Fly.io with a volume.
 # On the server (as root or a sudo user)
 apt update && apt install -y nodejs npm git caddy
 # make sure `node --version` is >= 22.5 (use nvm if not)
-git clone <your-repo> /var/www/aurelle && cd /var/www/aurelle
+git clone <your-repo> /var/www/kamilla && cd /var/www/kamilla
 cp .env.example .env
 nano .env        # set BASE_URL, ADMIN_PASSWORD, Stripe keys
 npm run seed
 ```
 
-Create `/etc/systemd/system/aurelle.service`:
+Create `/etc/systemd/system/kamilla.service`:
 
 ```ini
 [Unit]
-Description=AURELLE store
+Description=KAMILLA store
 After=network.target
 
 [Service]
-WorkingDirectory=/var/www/aurelle
+WorkingDirectory=/var/www/kamilla
 ExecStart=/usr/bin/node src/server.js
 Restart=always
 Environment=NODE_ENV=production
@@ -166,13 +166,13 @@ WantedBy=multi-user.target
 
 ```bash
 systemctl daemon-reload
-systemctl enable --now aurelle
+systemctl enable --now kamilla
 ```
 
 Create `/etc/caddy/Caddyfile` (Caddy gets you automatic HTTPS):
 
 ```
-aurelle.com {
+kamilla.com {
     reverse_proxy localhost:3000
 }
 ```
@@ -184,11 +184,11 @@ systemctl reload caddy
 ### Option B — Docker
 
 ```bash
-docker build -t aurelle .
-docker run -d --name aurelle -p 3000:3000 \
-  -v aurelle-data:/app/data \
+docker build -t kamilla .
+docker run -d --name kamilla -p 3000:3000 \
+  -v kamilla-data:/app/data \
   --env-file .env \
-  aurelle
+  kamilla
 ```
 
 Put a reverse proxy (Caddy/Nginx/Cloudflare Tunnel) in front for HTTPS.

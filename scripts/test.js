@@ -149,7 +149,7 @@ async function unitTests() {
 }
 
 async function main() {
-  console.log(`\nAURELLE integration test  (port ${PORT}, db ${DB_PATH})\n`);
+  console.log(`\nKAMILLA integration test  (port ${PORT}, db ${DB_PATH})\n`);
   await unitTests();
 
   const child = spawn(process.execPath, [join(ROOT, 'src', 'server.js')], {
@@ -187,7 +187,7 @@ async function main() {
 
     let res = await shop.get('/');
     check('GET / returns 200', res.status === 200);
-    check('Home page shows brand', res.text.includes('AURELLE'));
+    check('Home page shows brand', res.text.includes('KAMILLA'));
     check('Home page lists products', /Seamless Clip-In/.test(res.text));
 
     res = await shop.get('/shop');
@@ -221,7 +221,7 @@ async function main() {
 
     res = await shop.post('/api/cart', { action: 'add', variant_id: skuVariant, quantity: 1 });
     check('Add to cart succeeds', res.status === 200 && res.json.cart.count === 1);
-    check('Cart sets cookie', shop.jar.has('aurelle_cart'));
+    check('Cart sets cookie', shop.jar.has('kamilla_cart'));
 
     res = await shop.post('/api/cart', { action: 'add', variant_id: skuVariant, quantity: 2 });
     check('Adding again increments quantity', res.json.cart.count === 3);
@@ -300,7 +300,7 @@ async function main() {
     check('Wrong password rejected', res.status === 302 && res.headers.get('location').includes('error=1'));
 
     res = await admin.form('/admin/login', { password: ADMIN_PASS });
-    check('Correct password logs in', res.status === 302 && admin.jar.has('aurelle_admin'));
+    check('Correct password logs in', res.status === 302 && admin.jar.has('kamilla_admin'));
 
     res = await admin.get('/admin/dashboard');
     check('Dashboard loads after login', res.status === 200 && res.text.includes('Revenue'));

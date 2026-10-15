@@ -1,4 +1,4 @@
-// AURELLE storefront client
+// KAMILLA storefront client
 (function () {
   'use strict';
 

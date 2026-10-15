@@ -47,7 +47,7 @@ const databasePath = process.env.DATABASE_PATH || './data/store.db';
 export const config = {
   port: num('PORT', 3000),
   baseUrl: (process.env.BASE_URL || 'http://localhost:3000').replace(/\/$/, ''),
-  storeName: process.env.STORE_NAME || 'AURELLE',
+  storeName: process.env.STORE_NAME || 'KAMILLA',
   storeTagline: process.env.STORE_TAGLINE || 'Luxury Hair Extensions',
   currency: (process.env.CURRENCY || 'usd').toLowerCase(),
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',

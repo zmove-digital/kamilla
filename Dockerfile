@@ -1,4 +1,4 @@
-# AURELLE store - zero dependency Node image
+# KAMILLA store - zero dependency Node image
 FROM node:24-alpine
 
 WORKDIR /app

@@ -53,7 +53,7 @@ export function homePage({ featured, categories, cartCount }) {
         </ul>
       </div>
       <div class="hero-art">
-        <img src="/img/hero-aurelle.svg" alt="AURELLE extensions">
+        <img src="/img/hero-kamilla.svg" alt="KAMILLA extensions">
       </div>
     </div>
   </section>
