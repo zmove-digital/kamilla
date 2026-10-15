@@ -46,10 +46,18 @@ npm run seed
 npm start
 ```
 
-Open:
+Open (these only work **while the server is running on your own machine**):
 
 - Store: <http://localhost:3000>
 - Admin: <http://localhost:3000/admin>  (default password: `admin123`)
+
+> **Important:** clicking these links on GitHub will **not** open the store.
+> `localhost` means *your* computer, and this store is a Node.js server that has
+> to be running locally (`npm start`). A GitHub repository only hosts the
+> **code** — it does not run the site, and GitHub Pages cannot host it either
+> (Pages serves static files only; this app needs a Node process + database).
+> To get a public address you have to deploy it — see
+> [Deploying to production](#deploying-to-production).
 
 In this default setup Stripe runs in **local test mode** — checkout is simulated
 on a fake card screen, and no real money is charged. Perfect for showing a
