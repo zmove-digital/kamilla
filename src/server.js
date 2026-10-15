@@ -7,7 +7,7 @@ import { config, ROOT } from './config.js';
 import { migrate } from './db.js';
 import { seedIfEmpty } from './seed.js';
 import * as store from './db.js';
-import { productImageSvg } from './lib/images.js';
+import { productImageSvg, realImage } from './lib/images.js';
 import {
   uuid,
   parseCookies,
@@ -523,30 +523,21 @@ route('POST', '/admin/orders/:id/status', async (ctx) => {
 // Images + static
 // ---------------------------------------------------------------------------
 
-// Extensions recognised for real (user-supplied) product photos.
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
-const IMAGES_DIR = join(ROOT, 'public', 'images');
-
 // Serves a real photo from public/images/<name>.<ext> when it exists, otherwise
 // falls back to the generated SVG placeholder. To replace any demo image, just
 // drop a file in public/images/ named after the product slug (or hero-kamilla,
 // cat-<Category>, <slug>-2, <slug>-3 for thumbnails) - no code changes needed.
 async function imageRoute(ctx, name) {
-  const raw = String(name).replace(/\.svg$/i, '');
-  const base = raw.replace(/[^a-zA-Z0-9._-]/g, ''); // sanitise: strip path separators
-
-  for (const ext of IMAGE_EXTENSIONS) {
-    const filePath = join(IMAGES_DIR, base + ext);
-    if (!filePath.startsWith(IMAGES_DIR)) continue;
-    if (existsSync(filePath)) {
-      const data = await readFile(filePath);
-      ctx.res.writeHead(200, {
-        'Content-Type': MIME[ext] || 'application/octet-stream',
-        'Cache-Control': 'public, max-age=3600',
-      });
-      ctx.res.end(data);
-      return;
-    }
+  const base = String(name).replace(/\.svg$/i, '').replace(/[^a-zA-Z0-9._-]/g, ''); // sanitise
+  const hit = realImage(base);
+  if (hit) {
+    const data = await readFile(hit.path);
+    ctx.res.writeHead(200, {
+      'Content-Type': MIME[hit.ext] || 'application/octet-stream',
+      'Cache-Control': 'public, max-age=3600',
+    });
+    ctx.res.end(data);
+    return;
   }
 
   // Fallback: generated SVG placeholder.

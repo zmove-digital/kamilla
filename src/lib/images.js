@@ -1,4 +1,29 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { hashString, PALETTES, escapeHtml } from './util.js';
+import { ROOT } from '../config.js';
+
+// Real (user-supplied) photos live in public/images/. These are the file
+// extensions we look for, in priority order.
+export const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
+const IMAGES_DIR = join(ROOT, 'public', 'images');
+
+// Resolves a real photo for `name` (a slug, "slug-2", "cat-<Category>",
+// "hero-kamilla", …) inside public/images/. Returns { url, path, ext } or null.
+export function realImage(name) {
+  const base = String(name).replace(/\.svg$/i, '').replace(/[^a-zA-Z0-9._-]/g, '');
+  for (const ext of IMAGE_EXTENSIONS) {
+    const filePath = join(IMAGES_DIR, base + ext);
+    if (existsSync(filePath)) return { url: `/images/${base}${ext}`, path: filePath, ext };
+  }
+  return null;
+}
+
+// Convenience wrapper: returns just the public URL, or null.
+export function realImageUrl(name) {
+  const hit = realImage(name);
+  return hit ? hit.url : null;
+}
 
 // Generates a deterministic, on-brand SVG "product photo" so the store is fully
 // self-contained (no external image hosting needed). Swap these for real

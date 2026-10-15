@@ -208,19 +208,20 @@ async function main() {
     res = await shop.get('/product/does-not-exist');
     check('Unknown product returns 404', res.status === 404);
 
-    res = await shop.get('/img/seamless-clip-in-extensions.svg');
+    // Use a synthetic name so the test is independent of photos a user may add.
+    res = await shop.get('/img/__test-image.svg');
     check('Placeholder image served as SVG', res.status === 200 && res.text.includes('<svg'));
 
     // Real image override: dropping a file in public/images/ replaces the placeholder.
-    const overrideFile = join(ROOT, 'public', 'images', 'seamless-clip-in-extensions.png');
+    const overrideFile = join(ROOT, 'public', 'images', '__test-image.png');
     writeFileSync(overrideFile, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
     try {
-      res = await shop.get('/img/seamless-clip-in-extensions.svg');
+      res = await shop.get('/img/__test-image.svg');
       check('Real photo overrides placeholder', res.status === 200 && (res.headers.get('content-type') || '').includes('image/png'));
     } finally {
       rmSync(overrideFile, { force: true });
     }
-    res = await shop.get('/img/seamless-clip-in-extensions.svg');
+    res = await shop.get('/img/__test-image.svg');
     check('Reverts to SVG once real photo removed', (res.headers.get('content-type') || '').includes('svg'));
 
     // ---- Cart ----------------------------------------------------------

@@ -1,5 +1,6 @@
 import { layout } from './layout.js';
 import { escapeHtml, formatMoney } from '../lib/util.js';
+import { realImageUrl } from '../lib/images.js';
 import { config } from '../config.js';
 
 function productCard(p) {
@@ -157,6 +158,21 @@ export function productPage({ product, related, cartCount }) {
     .map((d) => `<li>${escapeHtml(d.trim())}</li>`)
     .join('');
 
+  // Gallery: use real photos when present. If the main photo is a real file we
+  // only show the extra thumbnails that actually exist; otherwise we keep the
+  // two generated placeholders so the demo products still look like a gallery.
+  const thumbNames = [product.slug + '-2', product.slug + '-3'];
+  const realThumbs = thumbNames.map((n) => realImageUrl(n)).filter(Boolean);
+  const mainIsReal = Boolean(realImageUrl(product.slug));
+  const thumbs = realThumbs.length
+    ? realThumbs
+    : mainIsReal
+      ? []
+      : thumbNames.map((n) => `/img/${encodeURIComponent(n)}.svg`);
+  const thumbsHtml = thumbs.length
+    ? `<div class="thumbs">${thumbs.map((u) => `<img src="${u}" alt="">`).join('')}</div>`
+    : '';
+
   const body = `
   <div class="container">
     <nav class="breadcrumb"><a href="/shop">Shop</a> / <a href="/shop?category=${encodeURIComponent(product.category)}">${escapeHtml(product.category)}</a> / <span>${escapeHtml(product.name)}</span></nav>
@@ -164,10 +180,7 @@ export function productPage({ product, related, cartCount }) {
   <section class="container product-detail">
     <div class="gallery">
       <img src="/img/${encodeURIComponent(product.slug)}.svg" alt="${escapeHtml(product.name)}">
-      <div class="thumbs">
-        <img src="/img/${encodeURIComponent(product.slug + '-2')}.svg" alt="">
-        <img src="/img/${encodeURIComponent(product.slug + '-3')}.svg" alt="">
-      </div>
+      ${thumbsHtml}
     </div>
     <div class="pdp">
       <span class="product-cat">${escapeHtml(product.category)}</span>
