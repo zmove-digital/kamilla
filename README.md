@@ -83,6 +83,46 @@ npm test
 
 ---
 
+## Testing the store locally (walkthrough)
+
+Open <http://localhost:3000> and follow the buyer journey end to end. No real
+money moves — Stripe runs in local test mode.
+
+1. **Home** — hero, category tiles and featured products.
+2. **Shop** (`/shop`) — filter by category, search, change the sort order.
+3. **Product page** — pick a *Length & colour* variant, set the quantity and
+   click **Add to bag**. Sold-out variants are disabled.
+4. **Bag** (`/cart`) — change quantities, remove lines, see shipping and total.
+   Asking for more than the available stock is rejected with a clear message.
+5. **Checkout** (`/checkout`) — fill in the contact and shipping fields; the
+   order summary on the right updates live. Leave the email empty to see the
+   validation error.
+6. **Test payment** — you land on a simulated Stripe screen showing the test
+   card `4242 4242 4242 4242`. Click **Pay** to succeed, or **Simulate
+   decline** to test the failed-payment path (you are sent back to checkout).
+7. **Confirmation** (`/order/success`) — shows the order number (`KM-…`) and
+   the items. The bag is emptied.
+8. **Admin** (`/admin`, password `admin123`) — the dashboard shows the revenue
+   and the new order. Under **Orders** it is `paid`, and the stock of the
+   purchased variant dropped by the quantity bought.
+
+Useful URLs:
+
+| Page | URL |
+|---|---|
+| Store | `http://localhost:3000` |
+| Shop | `http://localhost:3000/shop` |
+| Product | `http://localhost:3000/product/seamless-clip-in-extensions` |
+| Bag | `http://localhost:3000/cart` |
+| Checkout | `http://localhost:3000/checkout` |
+| Admin | `http://localhost:3000/admin` |
+
+> The bag lives in a cookie, so a fresh browser window starts with an empty bag.
+> Orders and stock live in `data/store.db`. Run `npm run reset` to wipe
+> everything and start over from the demo catalog.
+
+---
+
 ## Configuration (`.env`)
 
 Copy `.env.example` to `.env` and adjust:
