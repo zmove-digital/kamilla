@@ -180,7 +180,7 @@ Acesse a loja publicada (ou `http://localhost:5180` com `npm run serve:static`).
 | --- | --- | --- |
 | `products` | `SELECT` só de `active = true` | tudo |
 | `variants` | `SELECT` só de produtos ativos | tudo |
-| `orders` | nada | `SELECT` / `UPDATE` |
+| `orders` | nada | `SELECT` (alterações só via RPC) |
 | `order_items` | nada | `SELECT` |
 | `admins` | nada | nada (só via `is_admin()`) |
 

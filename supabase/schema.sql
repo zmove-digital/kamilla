@@ -157,22 +157,10 @@ create policy "orders admin read"
   on public.orders for select
   using (public.is_admin());
 
-drop policy if exists "orders admin update" on public.orders;
-create policy "orders admin update"
-  on public.orders for update
-  using (public.is_admin())
-  with check (public.is_admin());
-
 drop policy if exists "order_items admin read" on public.order_items;
 create policy "order_items admin read"
   on public.order_items for select
   using (public.is_admin());
-
-drop policy if exists "order_items admin write" on public.order_items;
-create policy "order_items admin write"
-  on public.order_items for all
-  using (public.is_admin())
-  with check (public.is_admin());
 
 -- ----------------------------------------------------------------------------
 -- Checkout · create_order
@@ -468,9 +456,16 @@ grant usage on schema public to anon, authenticated;
 grant select on public.products, public.variants to anon;
 grant select, insert, update, delete on public.products, public.variants to authenticated;
 
--- Pedidos: somente o admin lê/atualiza pela API; o checkout usa RPC.
-grant select, update on public.orders to authenticated;
+-- Pedidos: somente o admin lê pela API; alterações passam pela RPC
+-- set_order_status (que ajusta o estoque). O checkout usa create_order.
+-- Revogamos escrita direta para não existir caminho que burle o estoque.
+revoke insert, update, delete on public.orders from anon, authenticated;
+revoke insert, update, delete on public.order_items from anon, authenticated;
+grant select on public.orders to authenticated;
 grant select on public.order_items to authenticated;
+
+-- A lista de admins nunca é exposta pela API; is_admin() lê como owner.
+revoke all on public.admins from anon, authenticated;
 
 -- Identities dos inserts feitos pelo admin via REST.
 grant usage, select on all sequences in schema public to authenticated;
