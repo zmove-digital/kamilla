@@ -2,7 +2,7 @@
   "name": "kamilla-store",
   "version": "1.0.0",
   "private": true,
-  "description": "KAMILLA - loja de celulares completa e sem dependências (catálogo, estoque, carrinho, checkout Stripe e painel admin) feita apenas com os módulos nativos do Node.js. Interface em português do Brasil.",
+  "description": "KAMILLA - loja de celulares em português do Brasil. SPA estática no GitHub Pages + Supabase (catálogo, variações, estoque, carrinho, checkout e painel admin), sem dependências npm. Inclui app Node/SQLite legado para uso local.",
   "type": "module",
   "engines": {
     "node": ">=22.5.0"
@@ -12,11 +12,20 @@
     "dev": "node --watch src/server.js",
     "seed": "node scripts/seed.js",
     "reset": "node scripts/reset.js",
-    "test": "node scripts/test.js"
+    "test": "node scripts/test.js",
+    "serve:static": "node scripts/serve-static.js",
+    "images:static": "node scripts/generate-static-images.js",
+    "supabase:seed": "node scripts/generate-supabase-seed.js",
+    "demo:data": "node scripts/generate-demo-data.js",
+    "mock:supabase": "node scripts/mock-supabase.js",
+    "test:api": "node scripts/test-api.js",
+    "test:smoke": "node scripts/smoke-static.js",
+    "test:smoke:live": "node scripts/smoke-static.js --live"
   },
   "keywords": [
     "ecommerce",
-    "stripe",
+    "supabase",
+    "github-pages",
     "store",
     "node",
     "sqlite"

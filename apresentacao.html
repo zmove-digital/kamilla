@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KAMILLA · Smartphones & Tecnologia</title>
+<meta name="description" content="KAMILLA — loja de celulares completa: catálogo com variações de armazenamento, RAM e cor, estoque por variação, carrinho, checkout Stripe e painel administrativo. Feita do zero, sem dependências.">
+<meta property="og:title" content="KAMILLA · Smartphones & Tecnologia">
+<meta property="og:description" content="Loja de celulares completa, em português, com carrinho, checkout Stripe e painel admin. Zero dependências.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#090b18">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2048%2048'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%238b5cf6'/%3E%3Cstop%20offset='.52'%20stop-color='%236366f1'/%3E%3Cstop%20offset='1'%20stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width='48'%20height='48'%20rx='14'%20fill='url(%23g)'/%3E%3Cpath%20d='M16%2013v22M16%2024l9-11M16%2024l10%2011'%20fill='none'%20stroke='%23fff'%20stroke-width='3.6'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3Ccircle%20cx='35'%20cy='14'%20r='2.6'%20fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f4fb; --surface:#fff; --ink:#0b0f1e; --muted:#656c85; --line:#e3e6f3;
+    --violet:#7c3aed; --indigo:#4f46e5; --cyan:#22d3ee; --primary:#6d28d9;
+    --grad:linear-gradient(135deg,#8b5cf6 0%,#6366f1 48%,#22d3ee 100%);
+    --sans:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --display:'Sora','Manrope',-apple-system,'Segoe UI',sans-serif;
+    --shadow:0 22px 60px rgba(16,20,45,.12);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.1;letter-spacing:-.02em;margin:0 0 .4em}
+  h1{font-size:clamp(2.4rem,5.5vw,4.2rem)}
+  h2{font-size:clamp(1.6rem,3vw,2.4rem)}
+  h3{font-size:1.05rem}
+  p{margin:0 0 1em}
+  .wrap{width:min(1140px,100% - 40px);margin-inline:auto}
+  .muted{color:var(--muted)}
+  .grad{background:linear-gradient(100deg,#c4b5fd,#a5b4fc 45%,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  .announce{background:linear-gradient(90deg,#7c3aed,#4f46e5 45%,#0891b2);color:#fff;text-align:center;font-size:.75rem;font-weight:800;letter-spacing:.06em;padding:10px 14px}
+
+  header{position:sticky;top:0;z-index:30;background:rgba(9,11,24,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.08);color:#fff}
+  .bar{display:flex;align-items:center;gap:18px;height:72px;min-height:72px}
+  .mark{display:flex;align-items:center;gap:11px}
+  .mark svg{width:40px;height:40px;border-radius:12px;box-shadow:0 8px 22px rgba(124,58,237,.45)}
+  .brand{font-family:var(--display);font-size:1.24rem;font-weight:800;letter-spacing:.16em;line-height:1}
+  .brand small{display:block;font-family:var(--sans);font-size:.55rem;letter-spacing:.32em;color:#a5b4fc;margin-top:4px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .bar nav a{font-size:.86rem;font-weight:700;color:rgba(255,255,255,.68);padding:9px 13px;border-radius:10px;transition:.2s}
+  .bar nav a:hover{color:#fff;background:rgba(255,255,255,.07)}
+  .bar nav a.cta{background:var(--grad);color:#fff;box-shadow:0 10px 26px rgba(99,102,241,.4)}
+
+  .hero{position:relative;overflow:hidden;color:#fff;background:radial-gradient(900px 500px at 12% 0%,rgba(124,58,237,.35),transparent 70%),radial-gradient(800px 500px at 88% 20%,rgba(8,145,178,.28),transparent 70%),#090b18;padding:clamp(52px,8vw,96px) 0 clamp(64px,8vw,100px)}
+  .hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1.08fr .92fr;gap:44px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:9px;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#c4b5fd;background:rgba(139,92,246,.14);border:1px solid rgba(167,139,250,.32);padding:8px 15px;border-radius:999px;margin-bottom:20px}
+  .pill i{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 4px rgba(74,222,128,.18)}
+  .hero .lede{color:rgba(226,232,240,.74);font-size:1.06rem;max-width:52ch}
+  .hero .lede strong{color:#fff}
+  .actions{display:flex;gap:13px;flex-wrap:wrap;margin:26px 0 24px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 26px;border-radius:999px;font-size:.9rem;font-weight:800;border:1.5px solid transparent;cursor:pointer;transition:transform .18s,box-shadow .2s,background .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:var(--grad);color:#fff;box-shadow:0 12px 30px rgba(99,102,241,.38)}
+  .btn-ghost{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.18);color:#fff}
+  .btn-ghost:hover{background:rgba(255,255,255,.1)}
+  .points{display:flex;gap:18px;flex-wrap:wrap;list-style:none;padding:0;margin:0;font-size:.82rem;color:rgba(226,232,240,.7)}
+  .points li::before{content:'✓';color:#4ade80;margin-right:7px;font-weight:900}
+
+  .stage{position:relative;display:grid;place-items:center;min-height:430px}
+  .stage::before{content:'';position:absolute;inset:6% 10%;background:radial-gradient(circle,rgba(139,92,246,.55),transparent 68%);filter:blur(50px)}
+  .phone{position:relative;width:238px;height:486px;border-radius:44px;background:linear-gradient(160deg,#4b4f6d,#14172a 40%,#080a14);padding:9px;box-shadow:0 44px 96px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.22);transform:rotate(-6deg);animation:float 7s ease-in-out infinite}
+  .screen{width:100%;height:100%;border-radius:36px;background:radial-gradient(circle at 26% 18%,#7c3aed,transparent 52%),radial-gradient(circle at 78% 82%,#0891b2,transparent 58%),#0b1020;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;position:relative;overflow:hidden}
+  .island{position:absolute;top:15px;left:50%;transform:translateX(-50%);width:86px;height:23px;border-radius:14px;background:#04050b}
+  .screen small{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:#c4b5fd;margin-bottom:10px}
+  .screen strong{font-family:var(--display);font-size:1.45rem;display:block;margin-bottom:16px}
+  .screen span{font-size:.66rem;color:rgba(255,255,255,.6)}
+  .screen b{font-family:var(--display);font-size:1.85rem;display:block;margin:2px 0 3px}
+  .screen em{font-style:normal;font-size:.7rem;color:#67e8f9}
+  .fc{position:absolute;background:rgba(255,255,255,.96);color:var(--ink);padding:10px 15px;border-radius:14px;font-size:.76rem;font-weight:800;box-shadow:0 16px 40px rgba(0,0,0,.3);animation:float 5.5s ease-in-out infinite;white-space:nowrap}
+  .fc1{top:8%;left:0}
+  .fc2{top:36%;right:-2%;animation-delay:-2s}
+  .fc3{bottom:18%;left:2%;animation-delay:-3.4s}
+  .fc4{bottom:2%;right:4%;animation-delay:-4.2s}
+
+  .strip{background:#fff;border-bottom:1px solid var(--line)}
+  .strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:24px 0}
+  .trust{display:flex;align-items:center;gap:12px}
+  .trust i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-style:normal;font-size:1.15rem;background:linear-gradient(135deg,#f5f0ff,#ecfeff);border:1px solid #e6e0ff;flex-shrink:0}
+  .trust strong{display:block;font-size:.86rem}
+  .trust small{display:block;font-size:.74rem;color:var(--muted)}
+
+  section{padding:64px 0}
+  .kicker{display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:var(--primary);margin-bottom:8px}
+  .lead{color:var(--muted);max-width:620px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:28px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 10px 30px rgba(16,20,45,.05);transition:.25s}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#d9d2fb}
+  .card .ico{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:1.25rem;background:linear-gradient(135deg,#f5f0ff,#ecfeff);border:1px solid #e6e0ff;margin-bottom:14px}
+  .card p{color:var(--muted);font-size:.89rem;margin:0}
+  .card code{font-size:.82em;background:#f1eefe;color:var(--primary);padding:2px 6px;border-radius:6px}
+
+  .demo{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .demo .wrap{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center}
+  .variants{display:grid;gap:10px;margin-top:18px}
+  .variant-row{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1.5px solid var(--line);border-radius:11px;padding:9px 14px;font-size:.82rem;font-weight:700;background:#fff;color:var(--ink)}
+  .chip.on{border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,var(--grad) border-box;color:var(--primary);box-shadow:0 6px 18px rgba(99,102,241,.16)}
+  .chip.off{opacity:.36;text-decoration:line-through}
+  .pricebox{background:linear-gradient(135deg,#faf8ff,#f2f7ff);border:1px solid #e7e2ff;border-radius:18px;padding:22px;margin-top:22px}
+  .pricebox b{font-family:var(--display);font-size:2rem;display:block;letter-spacing:-.03em}
+  .pricebox span{font-size:.82rem;color:var(--muted);display:block}
+  .pricebox em{font-style:normal;color:#0f8a5f;font-size:.82rem;font-weight:700}
+
+  .run{background:#090b18;color:#e5e9f5;border-radius:22px;padding:38px 34px;display:grid;grid-template-columns:1.05fr 1fr;gap:30px;align-items:center;box-shadow:var(--shadow)}
+  .run h2{color:#fff}
+  .run p{color:#9aa3bd}
+  .run .kicker{color:#a5b4fc}
+  pre{margin:0;background:#04050c;border:1px solid #212842;border-radius:14px;padding:18px 20px;overflow:auto;font-size:.84rem;line-height:1.75;color:#dbe4ff}
+  pre .c{color:#6b7694}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .note{margin-top:16px;font-size:.78rem;color:#7b87a6}
+
+  footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:.82rem;background:#fff}
+  .foot{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .foot a{font-weight:700;color:var(--primary)}
+
+  @keyframes float{0%,100%{transform:rotate(-6deg) translateY(0)}50%{transform:rotate(-4deg) translateY(-14px)}}
+  @media (max-width:900px){
+    .hero .wrap,.demo .wrap,.run{grid-template-columns:1fr}
+    .stage{order:-1;min-height:380px}
+    .strip .wrap{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:720px){
+    .bar nav{display:none}
+    .strip .wrap{grid-template-columns:1fr}
+    .phone{width:206px;height:422px}
+    .fc{font-size:.68rem;padding:8px 12px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="announce">🚚 Frete grátis acima de R$ 299 · 💳 12x sem juros · 🛡️ Garantia de 12 meses</div>
+
+<header>
+  <div class="wrap bar">
+    <a class="mark" href="#top" aria-label="KAMILLA">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".52" stop-color="#6366f1"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><rect width="48" height="48" rx="14" fill="url(#lg)"/><path d="M16 13v22M16 24l9-11M16 24l10 11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="35" cy="14" r="2.6" fill="#fff"/></svg>
+      <span class="brand">KAMILLA<small>tech store</small></span>
+    </a>
+    <nav>
+      <a href="#recursos">Recursos</a>
+      <a href="#variacoes">Variações</a>
+      <a href="#rodar">Como rodar</a>
+      <a href="https://github.com/zmove-digital/kamilla">GitHub</a>
+      <a class="cta" href="./">Abrir a loja</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="pill"><i></i> Ofertas da semana · até 20% OFF</span>
+        <h1>O celular dos seus sonhos, <span class="grad">sem pagar caro.</span></h1>
+        <p class="lede">iPhone, Galaxy, Motorola e Xiaomi com <strong>12x sem juros</strong>, frete grátis acima de R$ 299 e garantia de 12 meses. Uma loja completa, feita do zero, em português do Brasil.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="./">Abrir a loja →</a>
+          <a class="btn btn-ghost" href="https://github.com/zmove-digital/kamilla">Ver o código</a>
+        </div>
+        <ul class="points">
+          <li>10 celulares mais vendidos</li>
+          <li>128GB/256GB · 8GB/12GB · cores</li>
+          <li>Estoque por variação</li>
+        </ul>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <div class="phone">
+          <div class="screen">
+            <span class="island"></span>
+            <small>KAMILLA · oferta</small>
+            <strong>iPhone 16</strong>
+            <span>a partir de</span>
+            <b>R$ 5.499</b>
+            <em>ou 12x de R$ 458,25</em>
+          </div>
+        </div>
+        <span class="fc fc1">✅ Frete grátis</span>
+        <span class="fc fc2">💳 12x sem juros</span>
+        <span class="fc fc3">🔥 -20% OFF</span>
+        <span class="fc fc4">🛡️ 12 meses</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div class="wrap">
+      <div class="trust"><i>🚚</i><div><strong>Frete grátis</strong><small>Acima de R$ 299</small></div></div>
+      <div class="trust"><i>💳</i><div><strong>12x sem juros</strong><small>No cartão de crédito</small></div></div>
+      <div class="trust"><i>🛡️</i><div><strong>Garantia 12 meses</strong><small>Produto novo e original</small></div></div>
+      <div class="trust"><i>↩️</i><div><strong>Troca em 7 dias</strong><small>Sem complicação</small></div></div>
+    </div>
+  </div>
+
+  <section id="recursos">
+    <div class="wrap">
+      <span class="kicker">O que tem dentro</span>
+      <h2>Tudo o que uma loja precisa, nada que ela não precisa.</h2>
+      <p class="lead">Uma SPA estática no GitHub Pages + Supabase (PostgreSQL, Auth e RLS). Sem build, sem framework, sem árvore de dependências — só o produto.</p>
+      <div class="grid">
+        <div class="card"><div class="ico">🛍️</div><h3>Catálogo e busca</h3><p>Home, loja com filtros por marca, busca e ordenação, além de páginas de produto ricas com variações e galeria.</p></div>
+        <div class="card"><div class="ico">📦</div><h3>Estoque seguro</h3><p>Estoque por variação, alertas de estoque baixo e transações atômicas para nunca vender a última unidade duas vezes.</p></div>
+        <div class="card"><div class="ico">💳</div><h3>Carrinho e checkout</h3><p>Sacola de verdade com frete grátis progressivo, criação de pedido transacional no Supabase e pagamento simulado para testar o fluxo completo.</p></div>
+        <div class="card"><div class="ico">⚙️</div><h3>Painel admin</h3><p>Dashboard com receita e pedidos, CRUD completo de produtos e variações e gestão de pedidos — estoque incluído.</p></div>
+        <div class="card"><div class="ico">🇧🇷</div><h3>Feita para o Brasil</h3><p>Interface 100% em português, preços em R$, parcelamento em 12x, Pix/boleto na comunicação e frete grátis acima de R$ 299.</p></div>
+        <div class="card"><div class="ico">⚡</div><h3>Zero dependências</h3><p>Frontend em módulos JavaScript puros e Supabase via REST/Auth. Os scripts de desenvolvimento usam apenas os módulos nativos do Node.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="variacoes" class="demo">
+    <div class="wrap">
+      <div>
+        <span class="kicker">Variações de verdade</span>
+        <h2>Armazenamento, RAM e cor — cada combinação com seu preço e estoque.</h2>
+        <p class="lead">A página do produto mostra seletores separados para <strong>Armazenamento</strong>, <strong>Memória RAM</strong> e <strong>Cor</strong>. Combinações indisponíveis ficam desabilitadas automaticamente, e o preço muda na hora.</p>
+        <p class="lead">Se um produto for cadastrado manualmente no admin com nomes livres, a loja volta sozinha para o seletor simples — sem quebrar nada.</p>
+      </div>
+      <div>
+        <div class="variants">
+          <div><span class="kicker">Armazenamento</span><div class="variant-row"><span class="chip on">128GB</span><span class="chip">256GB</span></div></div>
+          <div><span class="kicker">Memória RAM</span><div class="variant-row"><span class="chip on">8GB</span><span class="chip">12GB</span></div></div>
+          <div><span class="kicker">Cor</span><div class="variant-row"><span class="chip on">Preto</span><span class="chip">Branco</span><span class="chip off">Rosa</span><span class="chip">Ultramarino</span></div></div>
+        </div>
+        <div class="pricebox">
+          <b>R$ 5.499,00</b>
+          <span>ou 12x de R$ 458,25 sem juros</span>
+          <em>💠 5% OFF no Pix</em>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="rodar">
+    <div class="wrap">
+      <div class="run">
+        <div>
+          <span class="kicker">Coloque no ar</span>
+          <h2>Rodando em dois comandos.</h2>
+          <p>Requer Node.js 22.5 ou superior. Não precisa de <code>npm install</code> — não há pacotes.</p>
+          <a class="btn btn-primary" style="margin-top:8px" href="https://github.com/zmove-digital/kamilla#readme">Ler o guia completo</a>
+          <p class="note">A loja já está publicada no GitHub Pages. Para ativar checkout e admin, conecte o Supabase seguindo <a href="https://github.com/zmove-digital/kamilla/blob/main/supabase/README.md">supabase/README.md</a>.</p>
+        </div>
+        <pre><code><span class="c"># clone o projeto</span>
+git clone https://github.com/zmove-digital/kamilla
+cd kamilla
+npm run serve:static  <span class="c"># → http://localhost:5180</span>
+
+<span class="c"># depois: rode supabase/schema.sql e supabase/seed.sql</span>
+<span class="c"># e preencha public/store/config.js</span></code></pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© KAMILLA · Loja de celulares feita para ser personalizada.</span>
+    <span><a href="https://github.com/zmove-digital/kamilla">GitHub</a> · Licença MIT</span>
+  </div>
+</footer>
+</body>
+</html>

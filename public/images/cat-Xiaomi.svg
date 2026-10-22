@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1100" viewBox="0 0 900 1100" role="img" aria-label="Xiaomi">
+  <defs>
+    <linearGradient id="bg" gradientTransform="rotate(161)">
+      <stop offset="0%" stop-color="#db2777"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1020"/>
+      <stop offset="100%" stop-color="#1d2947"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#db2777" stop-opacity="0.95"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="28%" cy="18%" r="75%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-20%" width="160%" height="150%">
+      <feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#05070f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="1100" fill="url(#bg)"/>
+  <rect width="900" height="1100" fill="url(#glow)"/>
+
+  <!-- decorative rings -->
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.14">
+    <circle cx="126.00000000000001" cy="132" r="234" stroke-width="2"/>
+    <circle cx="828" cy="946" r="306" stroke-width="2"/>
+  </g>
+
+  <!-- floating spec chips -->
+  <g font-family="'Helvetica Neue', Arial, sans-serif" font-size="29" font-weight="700">
+    <g transform="translate(72, 242)">
+      <rect width="153" height="67.5" rx="33.3" fill="#ffffff" fill-opacity="0.16"/>
+      <text x="76.5" y="44.1" text-anchor="middle" fill="#ffffff" fill-opacity="0.92">5G</text>
+    </g>
+    <g transform="translate(666, 770)">
+      <rect width="171" height="67.5" rx="33.3" fill="#ffffff" fill-opacity="0.16"/>
+      <text x="85.5" y="44.1" text-anchor="middle" fill="#ffffff" fill-opacity="0.92">AI</text>
+    </g>
+  </g>
+
+  <!-- phone -->
+  <g filter="url(#shadow)">
+    <rect x="270" y="163" width="360" height="742" rx="58" fill="#0a0e18" stroke="#f8fafc" stroke-opacity="0.35" stroke-width="2"/>
+    <rect x="282" y="175" width="336" height="718" rx="47" fill="url(#screen)"/>
+
+    <!-- dynamic island -->
+    <rect x="403.2" y="189" width="93.60000000000001" height="25" rx="13" fill="#020409"/>
+
+    <!-- screen artwork -->
+    <g>
+      <rect x="300" y="326.24" width="300" height="252.28000000000003" rx="32" fill="url(#glass)" fill-opacity="0.95"/>
+      <text x="450" y="489.48" text-anchor="middle" dominant-baseline="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="122" font-weight="800" fill="#ffffff" fill-opacity="0.94" letter-spacing="2">X</text>
+      <rect x="300" y="623.04" width="179.8" height="13" rx="6" fill="#ffffff" fill-opacity="0.5"/>
+      <rect x="300" y="667.5600000000001" width="121.8" height="13" rx="6" fill="#ffffff" fill-opacity="0.28"/>
+    </g>
+
+    <!-- screen glare -->
+    <path d="M 292 697.24 L 550.8 185 L 594 185 L 292 801.12 Z" fill="url(#shine)" fill-opacity="0.35"/>
+  </g>
+
+  <text x="50%" y="1046" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="29" font-weight="700" fill="#ffffff" fill-opacity="0.82" letter-spacing="12">KAMILLA</text>
+</svg>

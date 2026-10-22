@@ -1,238 +1,193 @@
 # KAMILLA · Smartphones & Tecnologia
 
-Uma loja de celulares completa, feita **do zero**, com interface 100% em português do Brasil:
-catálogo, variações (armazenamento × RAM × cor), estoque por variação, carrinho, checkout com
-Stripe, painel administrativo e **zero dependências npm**.
+Loja de celulares **100% em português do Brasil**, com catálogo de 10 best-sellers, variações
+(armazenamento × memória × cor), estoque por variação, sacola, checkout e painel administrativo.
 
-Roda em um único processo Node.js + um arquivo SQLite.
+A loja publicada roda como **SPA estática no GitHub Pages** e conversa direto com o
+**Supabase** (PostgreSQL + Auth + RLS). Não há servidor Node em produção e **não há nenhuma
+dependência npm**.
+
+- **Loja:** <https://zmove-digital.github.io/kamilla/>
+- **Admin:** <https://zmove-digital.github.io/kamilla/#/admin>
+- **Apresentação:** [`apresentacao.html`](apresentacao.html)
+
+> Enquanto o Supabase não estiver configurado, a loja abre em **modo demonstração**: catálogo
+> completo com dados locais, checkout e login do admin desabilitados com um aviso. É ideal para
+> aprovar o visual pelo celular antes de conectar o banco real.
 
 ---
 
 ## O que está incluído
 
-- **Vitrine** com home editorial, hero animado, categorias por marca, mais vendidos, ofertas com
-  contagem regressiva, depoimentos e FAQ.
-- **Catálogo** com 10 celulares best-sellers (iPhone, Galaxy, Motorola, Xiaomi e Realme).
-- **Variações estruturadas**: `Armazenamento` (128GB/256GB), `Memória RAM` (8GB/12GB) e `Cor`.
-  Cada combinação tem seu próprio SKU, preço e estoque. Combinações indisponíveis são
-  desabilitadas automaticamente e o preço é atualizado na hora.
-- **Fallback inteligente**: produtos cadastrados manualmente com nomes de variação livres usam um
-  seletor simples, sem quebrar a página.
-- **Carrinho** com barra de progresso de frete grátis, atualização de quantidade e remoção.
-- **Checkout** com validação de e-mail/estoque, criação de pedido, decremento de estoque atômico e
-  idempotência (webhooks repetidos não descontam estoque duas vezes).
-- **Stripe Checkout** (hospedado, PCI-safe) + **modo de teste local** para demonstrações.
-- **Painel admin** em `/admin`: receita, pedidos, alertas de estoque baixo, CRUD de produtos e
-  variações, gestão de status de pedidos.
-- **Design system** com paleta violeta → índigo → ciano, tipografia Sora/Manrope, animações de
-  entrada, badges, "balões" flutuantes e logo própria.
-- **Imagens geradas em SVG** (mockup de celular) quando não há foto real — a loja nunca fica sem
-  imagem.
-- **Página de apresentação** em `index.html` para GitHub Pages.
+- **Home editorial** com hero animado, contagem regressiva, categorias, mais vendidos,
+  depoimentos, FAQ e “balões” de urgência.
+- **Catálogo** com iPhone, Galaxy, Motorola, Xiaomi e Realme; busca, filtro por marca e ordenação.
+- **Variações estruturadas** no formato `128GB · 8GB · Preto`: cada combinação tem SKU, preço e
+  estoque próprios. Combinações esgotadas ficam desabilitadas e o preço muda na hora.
+- **Fallback inteligente**: variações fora desse formato usam um seletor simples, sem quebrar.
+- **Sacola** em `localStorage`, com quantidade, remoção e barra de progresso de frete grátis.
+- **Checkout** com validação de e-mail/estoque, frete grátis acima de R$ 299 e criação de pedido
+  via RPC transacional no Supabase.
+- **Pagamento simulado** (aprovar/recusar) para testar o fluxo completo. A integração real com
+  Mercado Pago/Stripe entra depois via **Supabase Edge Functions** (veja abaixo).
+- **Painel admin** em `#/admin`: faturamento, pedidos, estoque baixo, CRUD de produtos e
+  variações, e mudança de status dos pedidos.
+- **Design system** com paleta violeta → índigo → ciano, tipografia Sora/Manrope, animações,
+  badges, logo própria e imagens SVG geradas.
+- **App Node/SQLite legado** incluso para rodar a versão SSR localmente (referência e testes).
 
 ---
 
-## Requisitos
+## Como a arquitetura funciona
 
-- **Node.js 22.5 ou superior** (usa `node:sqlite`).
-- Nenhum `npm install` — não há dependências.
-
----
-
-## Começando (local)
-
-```bash
-# 1. (opcional) criar sua configuração
-cp .env.example .env        # Windows: copy .env.example .env
-
-# 2. criar o banco com o catálogo demo
-npm run seed
-
-# 3. subir a loja
-npm start
+```
+GitHub Pages (index.html + public/store/*.js)
+        │  HTTPS · Auth + REST + RPC (chave anon pública)
+        ▼
+Supabase
+  ├── PostgreSQL (products, variants, orders, order_items, admins)
+  ├── Row Level Security (leitura pública; escrita só para o admin)
+  ├── Auth (e-mail/senha do admin)
+  └── RPCs: create_order, pay_order, order_status, set_order_status
 ```
 
-Abra **http://localhost:3000**.
-
-- Loja: `http://localhost:3000`
-- Painel: `http://localhost:3000/admin` (senha padrão: `admin123`)
-
----
-
-## Comandos do dia a dia
-
-| Comando | O que faz |
-| --- | --- |
-| `npm start` | Sobe a loja na porta 3000. |
-| `npm run dev` | Sobe com `--watch` (reinicia ao salvar). |
-| `npm run seed` | Cria o catálogo demo **apenas se o banco estiver vazio**. |
-| `npm run reset` | **Apaga** produtos/pedidos e recria o catálogo demo. |
-| `npm test` | Roda a suíte de testes de integração (57 verificações). |
-
-> ⚠️ `npm run reset` apaga pedidos e produtos. Use apenas em demonstração/desenvolvimento.
+- O **carrinho** fica no navegador; o banco só recebe o pedido no checkout.
+- O **anon key** do Supabase é público por design. A segurança real vem das **políticas RLS**.
+- **Nunca** coloque a chave `service_role` no frontend.
+- A navegação usa **hash routing** (`#/produto/iphone-16`), então qualquer link profundo funciona
+  no GitHub Pages sem configurar rewrite.
+- Os caminhos de imagem são relativos (`public/images/...`) para funcionar na subpasta `/kamilla/`.
 
 ---
 
-## Testando a loja (passo a passo)
+## Rodar localmente (modo demonstração)
 
-1. **Home** — confira o hero, as categorias, os mais vendidos e a oferta com contagem regressiva.
-2. **Loja** — em `/shop`, filtre por marca, busque por "galaxy" e ordene por menor preço.
-3. **Produto** — abra o iPhone 16. Teste:
-   - trocar **128GB → 256GB** (o preço muda);
-   - trocar **8GB → 12GB** nos modelos que oferecem as duas opções;
-   - selecionar cores (a cor **Rosa** do iPhone 16 está esgotada e aparece desabilitada);
-   - adicionar à sacola e ver o toast de confirmação.
-4. **Sacola** — altere quantidades, remova itens e acompanhe a barra de frete grátis.
-5. **Checkout** — preencha os dados e finalize. Em modo de teste você cai na tela
-   **Pagamento simulado**: clique em **Pagar** para concluir ou **Simular recusa** para testar a
-   falha. O pedido aparece em `/admin/orders` e o estoque é decrementado após o pagamento.
-6. **Admin** — faça login, veja a receita, edite um produto, crie uma variação com o formato
-   `128GB · 8GB · Preto` e altere o status de um pedido.
+Requisito: **Node.js 22.5+**. Não precisa de `npm install`.
+
+```bash
+npm run serve:static
+```
+
+Abra <http://localhost:5180>. A loja usa `public/store/demo-data.js` e mostra o banner de
+demonstração.
+
+Para testar o modo real localmente, suba o **mock do Supabase** em outro terminal:
+
+```bash
+npm run mock:supabase
+```
+
+O mock responde em `http://localhost:54321` e aceita:
+
+```
+admin: zmove.digital@gmail.com
+senha: admin123
+```
+
+Então aponte `public/store/config.js` para o mock (ou use o console do navegador):
+
+```js
+localStorage.setItem(
+  'kamilla_config_override',
+  JSON.stringify({ url: 'http://localhost:54321', key: 'mock-anon-key' })
+);
+```
+
+Recarregue a página. Para voltar ao modo demonstração, rode
+`localStorage.removeItem('kamilla_config_override')` e recarregue.
+
+> Esse override é opcional e serve apenas para desenvolvimento. Em produção, preencha o
+> `config.js` diretamente.
+
+---
+
+## Conectar o Supabase (passo a passo)
+
+O guia detalhado está em **[`supabase/README.md`](supabase/README.md)**. Resumo:
+
+1. Crie um projeto em <https://supabase.com> na região **South America (São Paulo)**.
+2. No **SQL Editor**, rode `supabase/schema.sql` e depois `supabase/seed.sql`.
+3. Em **Authentication → Providers → Email**, desative **“Allow new users to sign up”**.
+4. Em **Authentication → Users**, crie o admin `zmove.digital@gmail.com` com uma senha forte e
+   marque **Auto Confirm User**.
+5. Copie **Project URL** e **anon public key** em **Settings → API**.
+6. Preencha `public/store/config.js`:
+
+   ```js
+   export const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
+   export const SUPABASE_ANON_KEY = 'eyJhbGciOi...';
+   ```
+
+7. Commit e push. O GitHub Pages atualiza sozinho em alguns minutos.
+8. Entre em `#/admin` com o e-mail/senha do admin e cadastre/edite os produtos.
+
+> O `seed.sql` já cria os 10 celulares com 66 variações. Rodar de novo **sobrescreve** nome,
+> preço e estoque desses produtos — use com cuidado depois de começar a vender.
+
+### Adicionar outro administrador
+
+1. Crie o usuário em **Authentication → Users** (Auto Confirm).
+2. No SQL Editor:
+
+   ```sql
+   insert into public.admins (email) values ('outro@email.com')
+   on conflict (email) do nothing;
+   ```
+
+A política RLS libera escrita para qualquer e-mail presente em `public.admins`.
+
+---
+
+## Gerenciar a loja
+
+- **Produtos:** `#/admin/produtos` → criar, editar, ocultar e excluir.
+- **Variações:** nome no formato `128GB · 8GB · Preto`, SKU único, preço e estoque.
+- **Pedidos:** `#/admin/pedidos` → itens, cliente, pagamento e status
+  (Pendente, Pago, Enviado, Cancelado, Falhou).
+- **Estoque baixo:** o dashboard lista variações com **≤ 5 unidades**.
+
+### Imagens
+
+As imagens atuais são SVGs gerados em `public/images/` (mockup de celular). Para usar fotos reais,
+basta subir o arquivo e informar a URL no campo **Imagem** do produto, por exemplo
+`public/images/iphone-16.jpg`. Também é possível usar uma URL externa (HTTPS).
 
 ---
 
 ## Variações: como funcionam
 
-O banco guarda cada variação em `variants.name`. A loja reconhece o formato de **três partes
-separadas por `·`**:
+O banco guarda a variação em `variants.name`. Quando o nome tem **três partes separadas por `·`**,
+a página do produto monta os seletores:
 
 ```
 128GB · 8GB · Preto
 256GB · 12GB · Ultramarino
 ```
 
-Com esse formato, a página do produto renderiza os seletores de **Armazenamento**, **Memória RAM**
-e **Cor**. Qualquer outro formato cai no seletor simples tradicional — ideal para produtos
-cadastrados manualmente.
-
-Cada variação tem seu próprio `sku`, `price_cents` e `stock`, então você pode vender o mesmo
-modelo com preços e disponibilidades diferentes.
+Cada variação tem seu próprio `sku`, `price_cents` e `stock`. Qualquer outro formato cai no seletor
+simples tradicional — útil para produtos cadastrados manualmente.
 
 ---
 
-## Configuração (`.env`)
+## Comandos
 
-Copie `.env.example` para `.env` e ajuste:
+| Comando | O que faz |
+| --- | --- |
+| `npm run serve:static` | Serve a SPA em `http://localhost:5180`. |
+| `npm run mock:supabase` | Sobe o Supabase falso para testar checkout/admin. |
+| `npm run test:api` | 23 verificações da camada de dados contra o mock. |
+| `npm run test:smoke` | Smoke test do frontend em modo demonstração (headless). |
+| `npm run test:smoke:live` | Smoke test completo com checkout, pagamento e admin (mock). |
+| `npm test` | Suíte do app Node/SQLite legado (57 verificações). |
+| `npm start` | Sobe o app Node/SQLite legado em `http://localhost:3000`. |
+| `npm run seed` | Cria o catálogo demo no SQLite (se estiver vazio). |
+| `npm run reset` | **Apaga** produtos/pedidos do SQLite e recria o catálogo demo. |
+| `npm run supabase:seed` | Regenera `supabase/seed.sql` a partir do SQLite. |
+| `npm run demo:data` | Regenera `public/store/demo-data.js` a partir do SQLite. |
+| `npm run images:static` | Regenera as imagens SVG em `public/images/`. |
 
-| Variável | Padrão | Descrição |
-| --- | --- | --- |
-| `PORT` | `3000` | Porta HTTP. |
-| `BASE_URL` | `http://localhost:3000` | URL pública usada nos redirects do Stripe. |
-| `STORE_NAME` | `KAMILLA` | Nome da loja. |
-| `STORE_TAGLINE` | `Smartphones & Tecnologia` | Assinatura usada no SEO. |
-| `CURRENCY` | `brl` | Moeda (formatação pt-BR). |
-| `ADMIN_PASSWORD` | `admin123` | Senha do painel — **troque antes de publicar**. |
-| `STRIPE_SECRET_KEY` | *(vazio)* | Vazio = modo de teste local. |
-| `STRIPE_WEBHOOK_SECRET` | *(vazio)* | Segredo do webhook. |
-| `MOCK_PAYMENTS` | `true` | Força o modo simulado. |
-| `SHIPPING_FLAT_CENTS` | `2990` | Frete fixo em centavos (R$ 29,90). |
-| `FREE_SHIPPING_THRESHOLD_CENTS` | `29900` | Frete grátis a partir de R$ 299. |
-| `DATABASE_PATH` | `./data/store.db` | Arquivo SQLite. |
-| `SEED_ON_BOOT` | `true` | Popula o banco vazio na primeira subida. |
-
----
-
-## Colocando o Stripe para valer
-
-1. Crie uma conta em <https://stripe.com> e pegue as chaves em **Developers → API keys**.
-2. No `.env`, preencha `STRIPE_SECRET_KEY=sk_test_...` e defina `MOCK_PAYMENTS=false`.
-3. Configure o webhook em **Developers → Webhooks** apontando para:
-   `https://SEU_DOMINIO/webhook/stripe`
-   com o evento `checkout.session.completed`.
-4. Copie o `whsec_...` para `STRIPE_WEBHOOK_SECRET`.
-5. Ajuste `BASE_URL` para o domínio público (https).
-6. Teste com o cartão `4242 4242 4242 4242` (qualquer validade/CVC) e depois troque para as chaves
-   `sk_live_...`.
-
-Sem chaves, tudo funciona no **modo simulado**: o pedido é criado, o estoque é validado e o
-pagamento é concluído localmente, sem cobrança real.
-
----
-
-## Deploy em produção
-
-### Opção A — VPS (Ubuntu) com systemd + Caddy
-
-```bash
-# no servidor
-git clone https://github.com/zmove-digital/kamilla.git /var/www/kamilla
-cd /var/www/kamilla
-cp .env.example .env
-# edite .env (ADMIN_PASSWORD, BASE_URL, Stripe…)
-npm run seed
-```
-
-Crie `/etc/systemd/system/kamilla.service`:
-
-```ini
-[Unit]
-Description=KAMILLA store
-After=network.target
-
-[Service]
-WorkingDirectory=/var/www/kamilla
-ExecStart=/usr/bin/node src/server.js
-Restart=always
-EnvironmentFile=/var/www/kamilla/.env
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-systemctl enable --now kamilla
-```
-
-E um `Caddyfile` simples para HTTPS automático:
-
-```
-kamilla.seudominio.com {
-    reverse_proxy 127.0.0.1:3000
-}
-```
-
-### Opção B — Docker
-
-```bash
-docker build -t kamilla .
-docker run -d -p 3000:3000 -v kamilla-data:/app/data --env-file .env kamilla
-```
-
-> Monte um volume em `/app/data` para o SQLite sobreviver a reinícios.
-
-### Checklist antes de publicar
-
-- [ ] Trocar `ADMIN_PASSWORD`.
-- [ ] Configurar `BASE_URL` com https.
-- [ ] Ativar o Stripe real e o webhook.
-- [ ] Fazer backup de `data/store.db`.
-- [ ] Revisar preços e estoque no admin.
-
----
-
-## Gerenciando a loja
-
-- **Produtos**: `/admin/products` → criar, editar, ocultar e excluir.
-- **Variações**: nome no formato `128GB · 8GB · Preto`, SKU único, preço e estoque.
-- **Pedidos**: `/admin/orders` → acompanhar itens, cliente, pagamento e mudar o status
-  (Pendente, Pago, Enviado, Cancelado, Falhou).
-- **Estoque baixo**: o painel lista variações com **≤ 3 unidades**.
-
-### Usando fotos reais
-
-As imagens dos produtos são geradas em SVG (mockup de celular) para a loja funcionar sem nenhum
-arquivo externo. Para usar fotos reais, basta soltar o arquivo em `public/images/` com o nome do
-slug do produto:
-
-```
-public/images/iphone-16.jpg
-public/images/iphone-16-2.jpg
-public/images/iphone-16-3.jpg
-public/images/cat-Apple.jpg
-```
-
-Extensões aceitas: `.jpg`, `.jpeg`, `.png`, `.webp`, `.avif`. A loja detecta automaticamente e
-passa a servir a foto no lugar do SVG (a galeria mostra as miniaturas `-2` e `-3` quando existem).
+Os testes de frontend usam Brave/Chrome/Edge headless + CDP. Se o navegador não estiver no caminho
+padrão, defina `BRAVE_PATH`.
 
 ---
 
@@ -240,39 +195,84 @@ passa a servir a foto no lugar do SVG (a galeria mostra as miniaturas `-2` e `-3
 
 ```
 kamilla/
-├── index.html              # página de apresentação (GitHub Pages)
-├── package.json            # apenas scripts; nenhuma dependência
-├── .env.example            # modelo de configuração
-├── data/                   # SQLite (ignorado no git)
+├── index.html                  # shell da SPA publicada no GitHub Pages
+├── apresentacao.html           # página de apresentação (landing)
+├── package.json                # apenas scripts; nenhuma dependência
+├── .nojekyll                   # evita processamento Jekyll no Pages
 ├── public/
-│   ├── styles.css          # design system completo
-│   ├── app.js              # carrinho, seletores de variação, animações
-│   ├── logo.svg
-│   └── images/             # fotos reais opcionais
+│   ├── styles.css              # design system compartilhado
+│   ├── logo.svg / favicon.svg
+│   ├── images/                 # SVGs dos produtos e categorias
+│   └── store/
+│       ├── config.js           # URL + anon key do Supabase
+│       ├── api.js              # Auth/REST/RPC do Supabase + modo demo
+│       ├── pages.js            # home, catálogo, produto, sacola, checkout…
+│       ├── admin.js            # login, dashboard, CRUD, pedidos
+│       ├── cart.js             # sacola em localStorage
+│       ├── ui.js               # componentes, preços, animações, toast
+│       ├── app.js              # router por hash
+│       ├── store.css           # estilos específicos da SPA
+│       └── demo-data.js        # catálogo local (modo demonstração)
+├── supabase/
+│   ├── schema.sql              # tabelas, RLS, RPCs e grants
+│   ├── seed.sql                # catálogo inicial (10 produtos / 66 variações)
+│   └── README.md               # guia de configuração do projeto
 ├── scripts/
-│   ├── seed.js             # catálogo demo
-│   ├── reset.js            # reset do banco
-│   └── test.js             # testes de integração
-└── src/
-    ├── server.js           # rotas HTTP
-    ├── config.js           # .env + configurações
-    ├── db.js               # schema + estoque + pedidos
-    ├── seed.js             # catálogo (10 celulares)
-    ├── lib/                # util, imagens SVG, Stripe
-    └── views/              # layout, páginas e admin (SSR)
+│   ├── serve-static.js         # servidor local da SPA
+│   ├── mock-supabase.js        # Supabase falso para testes
+│   ├── test-api.js             # testes da camada de dados
+│   ├── smoke-static.js         # testes de UI headless
+│   ├── generate-static-images.js
+│   ├── generate-supabase-seed.js
+│   └── generate-demo-data.js
+└── src/                        # app Node/SQLite legado (SSR)
 ```
+
+---
+
+## Pagamento real (próxima etapa)
+
+O checkout atual termina em um **pagamento simulado** (`pay_order`). Para cobrar de verdade em uma
+SPA estática:
+
+1. Crie uma **Edge Function** no Supabase para criar a preferência/sessão no Mercado Pago ou Stripe.
+   A chave secreta fica nas variáveis de ambiente da função, nunca no navegador.
+2. Configure o **webhook** do provedor para outra Edge Function.
+3. No webhook, valide a assinatura e chame uma RPC `confirm_payment` que baixa o estoque de forma
+   atômica e idempotente.
+4. **Remova/limite** a RPC pública `pay_order` antes de vender de verdade — hoje ela existe para
+   demonstração e permite que qualquer pessoa marque um pedido como pago se souber o número.
+
+Enquanto isso, o fluxo atual serve para validar catálogo, pedidos, estoque e painel.
+
+---
+
+## App Node/SQLite legado
+
+A versão original em SSR continua no repositório para referência e uso local:
+
+```bash
+npm run seed
+npm start
+```
+
+- Loja: <http://localhost:3000>
+- Admin: <http://localhost:3000/admin> (senha padrão `admin123`)
+
+Ele usa `node:sqlite`, Stripe em modo mock por padrão e não é o que está publicado no GitHub Pages.
+A configuração fica em `.env` (veja `.env.example`).
 
 ---
 
 ## Segurança
 
-- Sessões de admin via cookie `HttpOnly` + `SameSite=Lax`.
-- Senha comparada com `crypto.timingSafeEqual`.
-- Webhook do Stripe validado por assinatura HMAC (quando o segredo está configurado).
-- Estoque descontado em transação atômica com verificação de disponibilidade.
-- Sem dependências npm = superfície de ataque mínima.
-
-Para produção, rode atrás de HTTPS (Caddy/Nginx) e troque a senha padrão.
+- **RLS** em todas as tabelas: leitura pública apenas de produtos ativos; escrita apenas para
+  e-mails em `public.admins`.
+- **Auth** do Supabase para o admin; a senha nunca passa pelo código da loja.
+- **Anon key** é pública; **service_role** nunca é exposta no frontend.
+- Checkout valida itens e estoque no banco antes de criar o pedido.
+- Pagamento simulado **não deve** ser usado em produção (veja a seção acima).
+- Para produção: HTTPS (o GitHub Pages já fornece), senha forte e backup do banco.
 
 ---
 
