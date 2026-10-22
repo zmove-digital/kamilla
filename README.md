@@ -125,7 +125,7 @@ O guia detalhado está em **[`supabase/README.md`](supabase/README.md)**. Resumo
 3. Em **Authentication → Providers → Email**, desative **“Allow new users to sign up”**.
 4. Em **Authentication → Users**, crie o admin `zmove.digital@gmail.com` com uma senha forte e
    marque **Auto Confirm User**.
-5. Copie **Project URL** e **anon public key** em **Settings → API**.
+5. Copie **Project URL** e **anon public key** (ou **Publishable key**) em **Settings → API**.
 6. Preencha `public/store/config.js`:
 
    ```js
