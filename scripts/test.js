@@ -164,7 +164,7 @@ async function main() {
       STRIPE_SECRET_KEY: '',
       STRIPE_WEBHOOK_SECRET: '',
       SHIPPING_FLAT_CENTS: '0',
-      FREE_SHIPPING_THRESHOLD_CENTS: '15000',
+      FREE_SHIPPING_THRESHOLD_CENTS: '29900',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -188,22 +188,25 @@ async function main() {
     let res = await shop.get('/');
     check('GET / returns 200', res.status === 200);
     check('Home page shows brand', res.text.includes('KAMILLA'));
-    check('Home page lists products', /Seamless Clip-In/.test(res.text));
+    check('Home page is in Brazilian Portuguese', res.text.includes('lang="pt-BR"') && res.text.includes('Mais vendidos'));
+    check('Home page lists products', /iPhone 16/.test(res.text));
+    check('Prices are formatted in BRL', res.text.includes('R$'));
 
     res = await shop.get('/shop');
     check('GET /shop returns 200', res.status === 200);
-    const productCount = (res.text.match(/class="product-card"/g) || []).length;
-    check('Shop lists all 8 seeded products', productCount === 8, `found ${productCount}`);
+    const productCount = (res.text.match(/class="product-card/g) || []).length;
+    check('Shop lists all 10 seeded products', productCount === 10, `found ${productCount}`);
 
-    res = await shop.get('/shop?category=Clip-In');
-    check('Category filter works', res.status === 200 && /Clip-In/.test(res.text));
+    res = await shop.get('/shop?category=Apple');
+    check('Category filter works', res.status === 200 && /iPhone 16 Pro Max/.test(res.text));
 
-    res = await shop.get('/shop?search=tape');
-    check('Search works', res.status === 200 && /Tape-In/.test(res.text));
+    res = await shop.get('/shop?search=galaxy');
+    check('Search works', res.status === 200 && /Galaxy S24 Ultra/.test(res.text));
 
-    res = await shop.get('/product/seamless-clip-in-extensions');
+    res = await shop.get('/product/iphone-16');
     check('Product page 200', res.status === 200);
     check('Product page has add-to-bag', /id="add-to-cart"/.test(res.text));
+    check('Product page shows storage/RAM pickers', res.text.includes('Armazenamento') && res.text.includes('Memória RAM') && res.text.includes('id="variant-data"'));
 
     res = await shop.get('/product/does-not-exist');
     check('Unknown product returns 404', res.status === 404);
@@ -229,7 +232,7 @@ async function main() {
     res = await shop.get('/api/cart');
     check('Empty cart has 0 items', res.json?.cart?.count === 0);
 
-    const skuVariant = variantIdBySku('CI-SEAM-20-NB');
+    const skuVariant = variantIdBySku('IP16-128-8-PRE');
     const stockBefore = readStock(skuVariant);
 
     res = await shop.post('/api/cart', { action: 'add', variant_id: skuVariant, quantity: 1 });
@@ -243,14 +246,14 @@ async function main() {
     check('Set quantity works', res.json.cart.count === 1);
 
     // Overselling guard
-    const lowStockVariant = variantIdBySku('CI-SEAM-24-HB'); // stock 3
+    const lowStockVariant = variantIdBySku('A15-256-12-PR'); // stock 3
     const over = await shop.post('/api/cart', { action: 'add', variant_id: lowStockVariant, quantity: 99 });
     check('Overselling is blocked (409)', over.status === 409 && over.json.code === 'INSUFFICIENT_STOCK');
     res = await shop.post('/api/cart', { action: 'add', variant_id: lowStockVariant, quantity: 2 });
     check('Valid quantity accepted', res.status === 200);
 
     res = await shop.get('/cart');
-    check('Cart page renders', res.status === 200 && res.text.includes('Your bag'));
+    check('Cart page renders', res.status === 200 && res.text.includes('Sua sacola'));
 
     // ---- Checkout (mock payment) --------------------------------------
     console.log('\nCheckout & inventory');
@@ -258,12 +261,12 @@ async function main() {
     check('Invalid email rejected', res.status === 400);
 
     res = await shop.post('/api/checkout', {
-      email: 'jane@example.com',
-      full_name: 'Jane Doe',
-      address: '123 Main St',
-      city: 'New York',
-      zip: '10001',
-      country: 'United States',
+      email: 'ana@example.com',
+      full_name: 'Ana Souza',
+      address: 'Av. Paulista, 1000',
+      city: 'São Paulo',
+      zip: '01310-100',
+      country: 'Brasil',
     });
     check('Checkout creates order + redirect URL', res.status === 200 && res.json.url.includes('/mock-pay'));
     const orderNumber = res.json.order;
@@ -272,7 +275,7 @@ async function main() {
     check('Stock NOT decremented before payment', stockMid === stockBefore);
 
     res = await shop.get(`/mock-pay?order=${orderNumber}`);
-    check('Mock pay page renders', res.status === 200 && res.text.includes('Simulated payment'));
+    check('Mock pay page renders', res.status === 200 && res.text.includes('Pagamento simulado'));
 
     res = await shop.post('/api/mock-pay', { order: orderNumber, outcome: 'success' });
     check('Mock payment succeeds', res.status === 200 && res.json.redirect.includes('/order/success'));
@@ -293,9 +296,9 @@ async function main() {
 
     // Decline path
     const shop2 = makeClient();
-    const v2 = variantIdBySku('CI-SEAM-16-CB');
+    const v2 = variantIdBySku('IP16-256-8-BRA');
     await shop2.post('/api/cart', { action: 'add', variant_id: v2, quantity: 1 });
-    const res2 = await shop2.post('/api/checkout', { email: 'decline@example.com', full_name: 'Decline Test', address: 'x', city: 'y', zip: '1', country: 'US' });
+    const res2 = await shop2.post('/api/checkout', { email: 'decline@example.com', full_name: 'Decline Test', address: 'x', city: 'y', zip: '1', country: 'BR' });
     const declined = await shop2.post('/api/mock-pay', { order: res2.json.order, outcome: 'fail' });
     check('Declined payment redirects to checkout', declined.json.redirect.includes('cancelled'));
 
@@ -304,7 +307,7 @@ async function main() {
     const admin = makeClient();
 
     res = await admin.get('/admin');
-    check('Admin login page renders', res.status === 200 && /Sign in/.test(res.text));
+    check('Admin login page renders', res.status === 200 && /Entrar/.test(res.text));
 
     res = await admin.get('/admin/dashboard');
     check('Dashboard blocked without auth', res.status === 302);
@@ -316,52 +319,52 @@ async function main() {
     check('Correct password logs in', res.status === 302 && admin.jar.has('kamilla_admin'));
 
     res = await admin.get('/admin/dashboard');
-    check('Dashboard loads after login', res.status === 200 && res.text.includes('Revenue'));
+    check('Dashboard loads after login', res.status === 200 && res.text.includes('Receita'));
 
     res = await admin.get('/admin/products');
-    check('Products admin lists items', res.status === 200 && /Seamless Clip-In/.test(res.text));
+    check('Products admin lists items', res.status === 200 && /iPhone 16/.test(res.text));
 
     res = await admin.get('/admin/orders');
     check('Orders admin shows the order', res.status === 200 && res.text.includes(orderNumber));
 
     // Create product
     res = await admin.form('/admin/products', {
-      name: 'Test Wig Unit',
-      category: 'Bundles',
-      subtitle: 'Test subtitle',
-      price: '99.90',
-      description: 'A test product',
-      details: 'one · two',
+      name: 'Celular Teste',
+      category: 'Xiaomi',
+      subtitle: 'Teste de cadastro manual',
+      price: '1299.90',
+      description: 'Um celular de teste',
+      details: 'Tela 6,5" · 128GB · 5G',
       active: 'on',
-      variant_name: ['18" · Black', '20" · Black'],
-      variant_sku: ['TEST-WIG-18', 'TEST-WIG-20'],
-      variant_price: ['99.90', '119.90'],
+      variant_name: ['128GB · 8GB · Preto', '256GB · 12GB · Azul'],
+      variant_sku: ['TEST-CEL-128', 'TEST-CEL-256'],
+      variant_price: ['1299.90', '1499.90'],
       variant_stock: ['5', '4'],
     });
     check('Create product redirects', res.status === 302);
     res = await admin.get('/admin/products');
-    check('New product appears', /Test Wig Unit/.test(res.text));
+    check('New product appears', /Celular Teste/.test(res.text));
 
-    const newVariant = variantIdBySku('TEST-WIG-18');
+    const newVariant = variantIdBySku('TEST-CEL-128');
     check('New product variant created with stock', readStock(newVariant) === 5);
 
     // Edit stock via admin
-    const newProductId = new DatabaseSync(DB_PATH).prepare("SELECT id FROM products WHERE slug='test-wig-unit'").get().id;
+    const newProductId = new DatabaseSync(DB_PATH).prepare("SELECT id FROM products WHERE slug='celular-teste'").get().id;
     res = await admin.get(`/admin/products/${newProductId}/edit`);
-    check('Edit product form loads', res.status === 200 && /Test Wig Unit/.test(res.text));
+    check('Edit product form loads', res.status === 200 && /Celular Teste/.test(res.text));
 
     res = await admin.form(`/admin/products/${newProductId}`, {
-      name: 'Test Wig Unit',
-      category: 'Bundles',
-      subtitle: 'Updated subtitle',
-      price: '109.90',
-      description: 'Updated',
-      details: 'one',
+      name: 'Celular Teste',
+      category: 'Xiaomi',
+      subtitle: 'Subtítulo atualizado',
+      price: '1399.90',
+      description: 'Atualizado',
+      details: 'Tela 6,5"',
       active: 'on',
       variant_id: [String(newVariant)],
-      variant_name: ['18" · Black'],
-      variant_sku: ['TEST-WIG-18'],
-      variant_price: ['109.90'],
+      variant_name: ['128GB · 8GB · Preto'],
+      variant_sku: ['TEST-CEL-128'],
+      variant_price: ['1399.90'],
       variant_stock: ['42'],
     });
     check('Update product redirects', res.status === 302);

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="120" viewBox="0 0 540 120" role="img" aria-label="KAMILLA Tech Store">
+  <defs>
+    <linearGradient id="kamillaGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="52%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8, 12)">
+    <rect width="96" height="96" rx="28" fill="url(#kamillaGrad)"/>
+    <path d="M32 25v46M32 48l19-23M32 48l21 23" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="70" cy="28" r="5" fill="#ffffff" fill-opacity="0.9"/>
+  </g>
+  <text x="124" y="60" font-family="Sora, Manrope, 'Segoe UI', sans-serif" font-size="44" font-weight="800" letter-spacing="9" fill="#0b0f1e">KAMILLA</text>
+  <text x="127" y="88" font-family="Manrope, 'Segoe UI', sans-serif" font-size="13" font-weight="700" letter-spacing="9" fill="#6d28d9">TECH STORE</text>
+</svg>

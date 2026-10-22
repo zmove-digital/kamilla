@@ -1,151 +1,278 @@
 import { db, createProduct, upsertVariant, migrate } from './db.js';
 
 // ---------------------------------------------------------------------------
-// Brand: KAMILLA - Luxury Hair Extensions
-// Full demo catalog. Edit freely - the store reads everything from the DB.
+// Brand: KAMILLA - Smartphones & Tecnologia
+// Catálogo demo com 10 dos celulares mais vendidos. Cada produto tem variações
+// de armazenamento (128GB/256GB), memória RAM (8GB/12GB) e cor.
+// Edite livremente (ou pelo painel /admin) - a loja lê tudo do banco.
 // ---------------------------------------------------------------------------
+
+const COLORS = {
+  iphone: [
+    { name: 'Preto', slug: 'PRE' },
+    { name: 'Branco', slug: 'BRA' },
+    { name: 'Rosa', slug: 'ROS' },
+    { name: 'Ultramarino', slug: 'ULT' },
+  ],
+  titanium: [
+    { name: 'Titânio Natural', slug: 'TN' },
+    { name: 'Titânio Preto', slug: 'TP' },
+    { name: 'Titânio Deserto', slug: 'TD', extra: 20000 },
+    { name: 'Titânio Branco', slug: 'TB' },
+  ],
+  galaxyS: [
+    { name: 'Titânio Cinza', slug: 'TC' },
+    { name: 'Titânio Preto', slug: 'TP' },
+    { name: 'Titânio Violeta', slug: 'TV', extra: 10000 },
+  ],
+  galaxyA55: [
+    { name: 'Azul Marinho', slug: 'AM' },
+    { name: 'Lilás', slug: 'LL' },
+    { name: 'Branco', slug: 'BR' },
+    { name: 'Preto', slug: 'PR' },
+  ],
+  galaxyA15: [
+    { name: 'Preto', slug: 'PR' },
+    { name: 'Azul', slug: 'AZ' },
+    { name: 'Amarelo', slug: 'AM' },
+  ],
+  motorola: [
+    { name: 'Azul Petróleo', slug: 'AP' },
+    { name: 'Magenta', slug: 'MG' },
+    { name: 'Grafite', slug: 'GF' },
+  ],
+  edge: [
+    { name: 'Preto', slug: 'PT' },
+    { name: 'Lilás', slug: 'LL' },
+    { name: 'Branco', slug: 'BR' },
+  ],
+  xiaomi: [
+    { name: 'Preto', slug: 'PR' },
+    { name: 'Branco', slug: 'BR' },
+    { name: 'Roxo', slug: 'RX' },
+  ],
+  poco: [
+    { name: 'Preto', slug: 'PR' },
+    { name: 'Amarelo', slug: 'AM' },
+    { name: 'Cinza', slug: 'CZ' },
+  ],
+  realme: [
+    { name: 'Azul', slug: 'AZ' },
+    { name: 'Bege', slug: 'BG' },
+    { name: 'Preto', slug: 'PR' },
+  ],
+};
 
 const PRODUCTS = [
   {
-    slug: 'seamless-clip-in-extensions',
-    name: 'Seamless Clip-In Extensions',
-    category: 'Clip-In',
-    subtitle: '7-piece set · 100% Remy human hair',
-    price_cents: 14900,
-    compare_at_cents: 18900,
+    slug: 'iphone-16',
+    name: 'iPhone 16',
+    category: 'Apple',
+    skuPrefix: 'IP16',
+    subtitle: 'Tela 6,1" Super Retina XDR · Chip A18 · Câmera 48MP',
+    price_cents: 549900,
+    compare_at_cents: 619900,
     featured: 1,
     description:
-      'Our best-selling seamless clip-in set. Ultra-thin PU wefts lie flat against the scalp for an invisible, natural finish. Made from ethically sourced 100% Remy human hair that can be washed, styled and heat-treated like your own.',
-    details: '7 wefts · 120g · PU seamless base · Remy human hair · Reusable for 12+ months',
-    variants: [
-      { name: '16" · Natural Black', sku: 'CI-SEAM-16-NB', price_cents: 14900, stock: 24 },
-      { name: '16" · Chocolate Brown', sku: 'CI-SEAM-16-CB', price_cents: 14900, stock: 15 },
-      { name: '20" · Natural Black', sku: 'CI-SEAM-20-NB', price_cents: 17900, stock: 18 },
-      { name: '20" · Chocolate Brown', sku: 'CI-SEAM-20-CB', price_cents: 17900, stock: 9 },
-      { name: '24" · Natural Black', sku: 'CI-SEAM-24-NB', price_cents: 21900, stock: 6 },
-      { name: '24" · Honey Blonde', sku: 'CI-SEAM-24-HB', price_cents: 22900, stock: 3 },
+      'O iPhone 16 chega com o chip A18, botão de Ação e o novo Controle de Câmera. Fotos incríveis com a câmera Fusion de 48MP, bateria para o dia inteiro e Apple Intelligence para deixar tudo mais rápido. É o iPhone que cabe no seu bolso e entrega potência de sobra.',
+    details: 'Tela 6,1" · Chip A18 · Câmera 48MP · 5G · Face ID · USB-C · Resistente à água',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 549900, stock: 14 },
+      { storage: '256GB', ram: '8GB', price_cents: 629900, stock: 9 },
+    ],
+    colors: [
+      { name: 'Preto', slug: 'PRE' },
+      { name: 'Branco', slug: 'BRA' },
+      { name: 'Rosa', slug: 'ROS', stock: 0 },
+      { name: 'Ultramarino', slug: 'ULT' },
     ],
   },
   {
-    slug: 'tape-in-extensions',
-    name: 'Invisible Tape-In Extensions',
-    category: 'Tape-In',
-    subtitle: '40 pieces · salon-grade adhesive',
-    price_cents: 12900,
-    compare_at_cents: 15900,
+    slug: 'iphone-16-pro-max',
+    name: 'iPhone 16 Pro Max',
+    category: 'Apple',
+    skuPrefix: 'IP16PM',
+    subtitle: 'Tela 6,9" ProMotion · Titânio · Chip A18 Pro',
+    price_cents: 899900,
+    compare_at_cents: 999900,
     featured: 1,
     description:
-      'Salon-quality tape-ins with a medical-grade adhesive that stays put for 6–8 weeks. Lightweight, flat and undetectable — perfect for fine hair that needs volume without bulk.',
-    details: '40 pieces (20 sandwiches) · 50g · Remy human hair · Biodegradable tape tabs',
-    variants: [
-      { name: '16" · Natural Black', sku: 'TI-INV-16-NB', price_cents: 12900, stock: 20 },
-      { name: '20" · Dark Brown', sku: 'TI-INV-20-DB', price_cents: 14900, stock: 12 },
-      { name: '22" · Honey Blonde', sku: 'TI-INV-22-HB', price_cents: 16900, stock: 5 },
+      'O topo de linha da Apple em titânio: tela de 6,9" com ProMotion 120Hz, chip A18 Pro e o melhor sistema de câmera já feito para um iPhone, com gravação em 4K 120fps. Para quem quer o máximo em performance, fotografia e status.',
+    details: 'Tela 6,9" 120Hz · Chip A18 Pro · Câmera 48MP · 5G · Face ID · Titânio',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 899900, stock: 7 },
+      { storage: '256GB', ram: '8GB', price_cents: 999900, stock: 5 },
     ],
+    colors: COLORS.titanium,
   },
   {
-    slug: 'luxe-sew-in-bundles',
-    name: 'Luxe Sew-In Bundles (3-Pack)',
-    category: 'Bundles',
-    subtitle: 'Triple weft · double drawn',
-    price_cents: 19900,
-    compare_at_cents: 24900,
+    slug: 'galaxy-s24-ultra',
+    name: 'Samsung Galaxy S24 Ultra',
+    category: 'Samsung',
+    skuPrefix: 'S24U',
+    subtitle: 'Tela 6,8" AMOLED · S Pen · Câmera 200MP',
+    price_cents: 649900,
+    compare_at_cents: 749900,
     featured: 1,
     description:
-      'Three double-drawn bundles for a full, glamorous install. Thick from root to tip with no shedding and minimal tangling. Blends seamlessly with relaxed and natural textures.',
-    details: '3 bundles · 300g total · Double drawn · Machine and hand-tied friendly',
-    variants: [
-      { name: '18" · Natural Black', sku: 'BD-LUX-18-NB', price_cents: 19900, stock: 14 },
-      { name: '22" · Natural Black', sku: 'BD-LUX-22-NB', price_cents: 23900, stock: 8 },
-      { name: '26" · Jet Black', sku: 'BD-LUX-26-JB', price_cents: 27900, stock: 4 },
+      'O Galaxy S24 Ultra é uma estação de trabalho no bolso: câmera de 200MP, S Pen integrada, tela AMOLED de 6,8" e Galaxy AI para traduzir, resumir e editar em segundos. Titânio, bateria de longa duração e desempenho de sobra.',
+    details: 'Tela 6,8" AMOLED 120Hz · S Pen · 200MP · Galaxy AI · 5G · Titânio',
+    combos: [
+      { storage: '128GB', ram: '12GB', price_cents: 649900, stock: 10 },
+      { storage: '256GB', ram: '12GB', price_cents: 729900, stock: 6 },
     ],
+    colors: COLORS.galaxyS,
   },
   {
-    slug: 'wrap-ponytail',
-    name: 'Wrap-Around Ponytail',
-    category: 'Ponytail',
-    subtitle: 'Instant length · one piece',
-    price_cents: 6900,
-    compare_at_cents: 8900,
-    featured: 0,
+    slug: 'galaxy-a55-5g',
+    name: 'Samsung Galaxy A55 5G',
+    category: 'Samsung',
+    skuPrefix: 'A55',
+    subtitle: 'Tela 6,6" Super AMOLED · 50MP · Bateria 5000mAh',
+    price_cents: 219900,
+    compare_at_cents: 259900,
+    featured: 1,
     description:
-      'A one-piece wrap-around ponytail that installs in under a minute. The clever wrap hides the band for a seamless, salon-blended finish. Ideal for sleek or curly updos.',
-    details: '1 piece · 100g · Adjustable wrap · Heat-friendly synthetic blend',
-    variants: [
-      { name: '20" · Natural Black', sku: 'PT-WRAP-20-NB', price_cents: 6900, stock: 30 },
-      { name: '20" · Ash Blonde', sku: 'PT-WRAP-20-AB', price_cents: 6900, stock: 22 },
-      { name: '24" · Dark Brown', sku: 'PT-WRAP-24-DB', price_cents: 7900, stock: 11 },
+      'O campeão de vendas da Samsung no Brasil. Tela Super AMOLED de 6,6", câmera de 50MP com estabilização óptica, 5G e bateria de 5000mAh que aguenta o dia todo. Acabamento premium em vidro e metal, com 4 anos de atualizações.',
+    details: 'Tela 6,6" Super AMOLED 120Hz · 50MP OIS · 5000mAh · 5G · IP67',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 219900, stock: 25 },
+      { storage: '256GB', ram: '12GB', price_cents: 259900, stock: 15 },
     ],
+    colors: COLORS.galaxyA55,
   },
   {
-    slug: 'clip-in-bangs',
-    name: 'Clip-In Fringe Bangs',
-    category: 'Clip-In',
-    subtitle: 'Blendable · 3 clips',
-    price_cents: 3900,
-    compare_at_cents: null,
+    slug: 'galaxy-a15',
+    name: 'Samsung Galaxy A15',
+    category: 'Samsung',
+    skuPrefix: 'A15',
+    subtitle: 'Tela 6,5" AMOLED · 50MP · Bateria 5000mAh',
+    price_cents: 109900,
+    compare_at_cents: 139900,
     featured: 0,
     description:
-      'Switch up your look in seconds with clip-in fringe. Pre-styled and blendable, perfect for trying bangs without the commitment. Trim to your desired length.',
-    details: '1 piece · 12g · 3 comfort clips · Remy human hair',
-    variants: [
-      { name: 'Natural Black', sku: 'CB-FRG-NB', price_cents: 3900, stock: 40 },
-      { name: 'Warm Brown', sku: 'CB-FRG-WB', price_cents: 3900, stock: 28 },
+      'O melhor custo-benefício para o dia a dia. Tela AMOLED de 6,5", câmera de 50MP, bateria de 5000mAh com carregamento rápido e 5G. Ideal para quem quer um Samsung confiável sem gastar muito.',
+    details: 'Tela 6,5" AMOLED 90Hz · 50MP · 5000mAh · 5G · Carregamento 25W',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 109900, stock: 30 },
+      { storage: '256GB', ram: '12GB', price_cents: 139900, stock: 3 },
     ],
+    colors: COLORS.galaxyA15,
   },
   {
-    slug: 'silk-repair-hair-kit',
-    name: 'Silk Repair Hair Kit',
-    category: 'Care',
-    subtitle: 'Shampoo · mask · serum',
-    price_cents: 5900,
-    compare_at_cents: 7400,
-    featured: 0,
+    slug: 'moto-g84-5g',
+    name: 'Motorola Moto G84 5G',
+    category: 'Motorola',
+    skuPrefix: 'G84',
+    subtitle: 'Tela 6,5" pOLED · 50MP · 256GB de fábrica',
+    price_cents: 149900,
+    compare_at_cents: 179900,
+    featured: 1,
     description:
-      'A three-step at-home routine formulated specifically for extensions. Sulfate-free shampoo, deep repair mask and shine serum that keep wefts soft, tangle-free and looking brand new.',
-    details: '250ml shampoo · 200ml mask · 60ml serum · Sulfate & paraben free',
-    variants: [
-      { name: 'Repair Kit (3 pieces)', sku: 'CARE-KIT-3', price_cents: 5900, stock: 35 },
-      { name: 'Refill Mask Only', sku: 'CARE-MASK', price_cents: 2400, stock: 50 },
+      'Um dos celulares mais vendidos da Motorola: tela pOLED de 6,5" com 120Hz, câmera de 50MP com OIS, som estéreo e acabamento em couro vegano. Desempenho equilibrado e bateria que passa de um dia inteiro.',
+    details: 'Tela 6,5" pOLED 120Hz · 50MP OIS · Som estéreo · 5000mAh · 5G',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 149900, stock: 18 },
+      { storage: '256GB', ram: '12GB', price_cents: 179900, stock: 11 },
     ],
+    colors: COLORS.motorola,
   },
   {
-    slug: 'extension-brush',
-    name: 'Loop-Extension Brush',
-    category: 'Accessories',
-    subtitle: 'Gentle detangling for wefts',
-    price_cents: 2200,
-    compare_at_cents: null,
+    slug: 'moto-edge-50-pro',
+    name: 'Motorola Edge 50 Pro',
+    category: 'Motorola',
+    skuPrefix: 'E50P',
+    subtitle: 'Tela 6,7" pOLED 144Hz · 50MP · Carregamento 125W',
+    price_cents: 299900,
+    compare_at_cents: 349900,
     featured: 0,
     description:
-      'Specially designed bristles detangle extensions without pulling at the bonds. Ergonomic, anti-static and safe for tape-ins, clip-ins and sew-ins.',
-    details: '1 brush · anti-static nylon bristles · soft-grip handle',
-    variants: [{ name: 'Rose Gold', sku: 'ACC-BRUSH-RG', price_cents: 2200, stock: 60 }],
+      'Design fino, tela pOLED de 6,7" com 144Hz e carregamento turbo de 125W: em poucos minutos você tem bateria para o dia todo. Câmera de 50MP com OIS, proteção IP68 e acabamento sofisticado.',
+    details: 'Tela 6,7" pOLED 144Hz · 50MP OIS · 4500mAh · TurboPower 125W · IP68',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 299900, stock: 9 },
+      { storage: '256GB', ram: '12GB', price_cents: 349900, stock: 6 },
+    ],
+    colors: COLORS.edge,
   },
   {
-    slug: 'satin-sleep-bonnet',
-    name: 'Satin Sleep Bonnet',
-    category: 'Accessories',
-    subtitle: 'Protects extensions overnight',
-    price_cents: 1900,
-    compare_at_cents: 2600,
+    slug: 'redmi-note-13-pro-5g',
+    name: 'Xiaomi Redmi Note 13 Pro 5G',
+    category: 'Xiaomi',
+    skuPrefix: 'RN13P',
+    subtitle: 'Tela 6,67" AMOLED · Câmera 200MP · 67W',
+    price_cents: 179900,
+    compare_at_cents: 209900,
+    featured: 1,
+    description:
+      'Câmera de 200MP, tela AMOLED de 6,67" com 120Hz e carregamento de 67W. O Redmi Note 13 Pro 5G entrega especificações de topo por um preço que cabe no orçamento. Um dos mais vendidos do Brasil.',
+    details: 'Tela 6,67" AMOLED 120Hz · 200MP OIS · 5100mAh · 67W · 5G',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 179900, stock: 20 },
+      { storage: '256GB', ram: '12GB', price_cents: 209900, stock: 12 },
+    ],
+    colors: COLORS.xiaomi,
+  },
+  {
+    slug: 'poco-x6-pro-5g',
+    name: 'Xiaomi POCO X6 Pro 5G',
+    category: 'Xiaomi',
+    skuPrefix: 'PX6P',
+    subtitle: 'Tela 6,67" AMOLED · Dimensity 8300 · 67W',
+    price_cents: 209900,
+    compare_at_cents: 239900,
     featured: 0,
     description:
-      'Keep your install flawless while you sleep. Our double-lined satin bonnet reduces friction, locks in moisture and prevents tangles for longer-lasting styles.',
-    details: '1 bonnet · double-layer satin · adjustable elastic band',
-    variants: [
-      { name: 'Black', sku: 'ACC-BONNET-BK', price_cents: 1900, stock: 45 },
-      { name: 'Blush', sku: 'ACC-BONNET-BL', price_cents: 1900, stock: 38 },
+      'Performance de flagship para jogos: Dimensity 8300 Ultra, tela AMOLED de 6,67" com 120Hz e resfriamento avançado. Se você joga, grava e multitarefa, o POCO X6 Pro é feito para você.',
+    details: 'Tela 6,67" AMOLED 120Hz · Dimensity 8300 Ultra · 64MP OIS · 67W · 5G',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 209900, stock: 13 },
+      { storage: '256GB', ram: '12GB', price_cents: 239900, stock: 8 },
     ],
+    colors: COLORS.poco,
+  },
+  {
+    slug: 'realme-12-pro-plus-5g',
+    name: 'Realme 12 Pro+ 5G',
+    category: 'Realme',
+    skuPrefix: 'RM12P',
+    subtitle: 'Tela 6,7" AMOLED · Periscópio 64MP · 67W',
+    price_cents: 239900,
+    compare_at_cents: 279900,
+    featured: 0,
+    description:
+      'O Realme 12 Pro+ 5G traz câmera periscópio de 64MP com zoom óptico, tela AMOLED curva de 6,7" e design inspirado em relógios de luxo. Custo-benefício imbatível para quem ama fotografia.',
+    details: 'Tela 6,7" AMOLED 120Hz · Periscópio 64MP · 5000mAh · 67W · 5G',
+    combos: [
+      { storage: '128GB', ram: '8GB', price_cents: 239900, stock: 11 },
+      { storage: '256GB', ram: '12GB', price_cents: 279900, stock: 7 },
+    ],
+    colors: COLORS.realme,
   },
 ];
+
+// Expands combos x colors into concrete variants (each with its own SKU,
+// price and stock). Colors can override the stock (e.g. a sold-out finish).
+export function variantsFor(product) {
+  const out = [];
+  for (const combo of product.combos) {
+    for (const color of product.colors) {
+      out.push({
+        name: `${combo.storage} · ${combo.ram} · ${color.name}`,
+        sku: `${product.skuPrefix}-${combo.storage.replace('GB', '')}-${combo.ram.replace('GB', '')}-${color.slug}`,
+        price_cents: combo.price_cents + (color.extra || 0),
+        stock: color.stock ?? combo.stock,
+      });
+    }
+  }
+  return out;
+}
 
 export function seedIfEmpty() {
   migrate();
   const existing = db.prepare('SELECT COUNT(*) AS c FROM products').get().c;
-  if (existing > 0) return false;
-  seed();
-  return true;
+  if (existing > 0) return 0;
+  return seed();
 }
 
 export function seed() {
@@ -163,7 +290,7 @@ export function seed() {
       active: 1,
       featured: p.featured,
     });
-    p.variants.forEach((v, i) => {
+    variantsFor(p).forEach((v, i) => {
       upsertVariant(productId, {
         name: v.name,
         sku: v.sku,

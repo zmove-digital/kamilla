@@ -2,7 +2,7 @@
   "name": "kamilla-store",
   "version": "1.0.0",
   "private": true,
-  "description": "KAMILLA - a complete zero-dependency e-commerce store (catalog, inventory, cart, Stripe checkout, admin panel) built with Node.js built-ins.",
+  "description": "KAMILLA - loja de celulares completa e sem dependências (catálogo, estoque, carrinho, checkout Stripe e painel admin) feita apenas com os módulos nativos do Node.js. Interface em português do Brasil.",
   "type": "module",
   "engines": {
     "node": ">=22.5.0"

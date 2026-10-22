@@ -1,4 +1,5 @@
 import { randomUUID, randomBytes } from 'node:crypto';
+import { config } from '../config.js';
 
 export function uuid() {
   return randomUUID();
@@ -8,16 +9,32 @@ export function randomToken(bytes = 24) {
   return randomBytes(bytes).toString('hex');
 }
 
-export function formatMoney(cents, currency = 'usd') {
+// Brazilian Portuguese money formatting (R$ 1.299,00 by default).
+export function formatMoney(cents, currency = config.currency) {
   const value = (cents || 0) / 100;
   try {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: currency.toUpperCase(),
+      currency: String(currency).toUpperCase(),
     }).format(value);
   } catch {
-    return `$${value.toFixed(2)}`;
+    return `R$ ${value.toFixed(2).replace('.', ',')}`;
   }
+}
+
+// Formats a SQLite datetime ("2026-10-22 13:45:00", stored in UTC) for display.
+export function formatDate(value) {
+  if (!value) return '';
+  const raw = String(value);
+  const iso = raw.includes('T') ? raw : raw.replace(' ', 'T') + 'Z';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return raw;
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+}
+
+// "12x de R$ 458,25 sem juros" helper.
+export function formatInstallments(cents, times = 12) {
+  return `${times}x de ${formatMoney(Math.round((cents || 0) / times))} sem juros`;
 }
 
 export function slugify(str) {
@@ -156,12 +173,12 @@ export function hashString(str) {
 }
 
 export const PALETTES = [
-  ['#c9a27e', '#8c5a3c'],
-  ['#e7cba9', '#b98a5e'],
-  ['#d9b8a2', '#7d5b45'],
-  ['#b3927a', '#5f4130'],
-  ['#e4bfa0', '#a86f4c'],
-  ['#cfa98d', '#6f4a34'],
-  ['#dcc3ad', '#9a6b4b'],
-  ['#bfa08a', '#6a4a38'],
+  ['#7c3aed', '#22d3ee'],
+  ['#2563eb', '#8b5cf6'],
+  ['#06b6d4', '#3b82f6'],
+  ['#db2777', '#7c3aed'],
+  ['#0ea5e9', '#14b8a6'],
+  ['#f59e0b', '#ef4444'],
+  ['#8b5cf6', '#ec4899'],
+  ['#10b981', '#0ea5e9'],
 ];

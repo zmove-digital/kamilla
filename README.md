@@ -1,200 +1,168 @@
-# KAMILLA — a complete online store
+# KAMILLA · Smartphones & Tecnologia
 
-A full e-commerce storefront **with zero npm dependencies**. It runs on Node.js
-built-ins only (`node:sqlite`, `node:http`, `fetch`, `crypto`), so there is
-nothing to install, no build step, and no framework churn.
+Uma loja de celulares completa, feita **do zero**, com interface 100% em português do Brasil:
+catálogo, variações (armazenamento × RAM × cor), estoque por variação, carrinho, checkout com
+Stripe, painel administrativo e **zero dependências npm**.
 
-Brand in the demo is **KAMILLA** (luxury hair extensions) but everything —
-name, copy, products, prices — is editable from the admin panel or the seed file.
-
----
-
-## What's included
-
-| Area | Details |
-|------|---------|
-| **Storefront** | Home, Shop (category filter, search, sort), Product detail, Cart (bag), Checkout, Order confirmation |
-| **Inventory** | Per-variant stock, low-stock alerts, atomic decrement (no overselling), sold-out badges |
-| **Cart** | Cookie session, add / update / remove, live stock validation |
-| **Payments** | Stripe Checkout (hosted, PCI-safe) **+ a local mock mode** for testing without keys |
-| **Webhooks** | Stripe signature verification, idempotent fulfilment |
-| **Admin panel** | Secure login, dashboard (revenue, orders, low stock), full product & variant CRUD, order management |
-| **Database** | SQLite via `node:sqlite` — a single file, no server to run |
-| **Tests** | 52 automated integration + unit tests covering the whole flow |
+Roda em um único processo Node.js + um arquivo SQLite.
 
 ---
 
-## Requirements
+## O que está incluído
 
-- **Node.js 22.5 or newer** (24 LTS recommended). The app uses the built-in
-  SQLite module. Check with `node --version`.
-- That's it. No `npm install` required.
+- **Vitrine** com home editorial, hero animado, categorias por marca, mais vendidos, ofertas com
+  contagem regressiva, depoimentos e FAQ.
+- **Catálogo** com 10 celulares best-sellers (iPhone, Galaxy, Motorola, Xiaomi e Realme).
+- **Variações estruturadas**: `Armazenamento` (128GB/256GB), `Memória RAM` (8GB/12GB) e `Cor`.
+  Cada combinação tem seu próprio SKU, preço e estoque. Combinações indisponíveis são
+  desabilitadas automaticamente e o preço é atualizado na hora.
+- **Fallback inteligente**: produtos cadastrados manualmente com nomes de variação livres usam um
+  seletor simples, sem quebrar a página.
+- **Carrinho** com barra de progresso de frete grátis, atualização de quantidade e remoção.
+- **Checkout** com validação de e-mail/estoque, criação de pedido, decremento de estoque atômico e
+  idempotência (webhooks repetidos não descontam estoque duas vezes).
+- **Stripe Checkout** (hospedado, PCI-safe) + **modo de teste local** para demonstrações.
+- **Painel admin** em `/admin`: receita, pedidos, alertas de estoque baixo, CRUD de produtos e
+  variações, gestão de status de pedidos.
+- **Design system** com paleta violeta → índigo → ciano, tipografia Sora/Manrope, animações de
+  entrada, badges, "balões" flutuantes e logo própria.
+- **Imagens geradas em SVG** (mockup de celular) quando não há foto real — a loja nunca fica sem
+  imagem.
+- **Página de apresentação** em `index.html` para GitHub Pages.
 
 ---
 
-## Quick start (local)
+## Requisitos
+
+- **Node.js 22.5 ou superior** (usa `node:sqlite`).
+- Nenhum `npm install` — não há dependências.
+
+---
+
+## Começando (local)
 
 ```bash
-# 1. (optional) create your config
-copy .env.example .env      # Windows
-# cp .env.example .env      # macOS/Linux
+# 1. (opcional) criar sua configuração
+cp .env.example .env        # Windows: copy .env.example .env
 
-# 2. create the database with the demo catalog
+# 2. criar o banco com o catálogo demo
 npm run seed
 
-# 3. start the store
+# 3. subir a loja
 npm start
 ```
 
-Open (these only work **while the server is running on your own machine**):
+Abra **http://localhost:3000**.
 
-- Store: <http://localhost:3000>
-- Admin: <http://localhost:3000/admin>  (default password: `admin123`)
+- Loja: `http://localhost:3000`
+- Painel: `http://localhost:3000/admin` (senha padrão: `admin123`)
 
-> **Important:** clicking these links on GitHub will **not** open the store.
-> `localhost` means *your* computer, and this store is a Node.js server that has
-> to be running locally (`npm start`). A GitHub repository only hosts the
-> **code** — it does not run the site, and GitHub Pages cannot host it either
-> (Pages serves static files only; this app needs a Node process + database).
-> To get a public address you have to deploy it — see
-> [Deploying to production](#deploying-to-production).
+---
 
-In this default setup Stripe runs in **local test mode** — checkout is simulated
-on a fake card screen, and no real money is charged. Perfect for showing a
-client the complete flow.
+## Comandos do dia a dia
 
-Run the automated tests any time with:
+| Comando | O que faz |
+| --- | --- |
+| `npm start` | Sobe a loja na porta 3000. |
+| `npm run dev` | Sobe com `--watch` (reinicia ao salvar). |
+| `npm run seed` | Cria o catálogo demo **apenas se o banco estiver vazio**. |
+| `npm run reset` | **Apaga** produtos/pedidos e recria o catálogo demo. |
+| `npm test` | Roda a suíte de testes de integração (57 verificações). |
 
-```bash
-npm test
+> ⚠️ `npm run reset` apaga pedidos e produtos. Use apenas em demonstração/desenvolvimento.
+
+---
+
+## Testando a loja (passo a passo)
+
+1. **Home** — confira o hero, as categorias, os mais vendidos e a oferta com contagem regressiva.
+2. **Loja** — em `/shop`, filtre por marca, busque por "galaxy" e ordene por menor preço.
+3. **Produto** — abra o iPhone 16. Teste:
+   - trocar **128GB → 256GB** (o preço muda);
+   - trocar **8GB → 12GB** nos modelos que oferecem as duas opções;
+   - selecionar cores (a cor **Rosa** do iPhone 16 está esgotada e aparece desabilitada);
+   - adicionar à sacola e ver o toast de confirmação.
+4. **Sacola** — altere quantidades, remova itens e acompanhe a barra de frete grátis.
+5. **Checkout** — preencha os dados e finalize. Em modo de teste você cai na tela
+   **Pagamento simulado**: clique em **Pagar** para concluir ou **Simular recusa** para testar a
+   falha. O pedido aparece em `/admin/orders` e o estoque é decrementado após o pagamento.
+6. **Admin** — faça login, veja a receita, edite um produto, crie uma variação com o formato
+   `128GB · 8GB · Preto` e altere o status de um pedido.
+
+---
+
+## Variações: como funcionam
+
+O banco guarda cada variação em `variants.name`. A loja reconhece o formato de **três partes
+separadas por `·`**:
+
+```
+128GB · 8GB · Preto
+256GB · 12GB · Ultramarino
 ```
 
----
+Com esse formato, a página do produto renderiza os seletores de **Armazenamento**, **Memória RAM**
+e **Cor**. Qualquer outro formato cai no seletor simples tradicional — ideal para produtos
+cadastrados manualmente.
 
-## Everyday commands
-
-| Command | What it does |
-|---------|--------------|
-| `npm start` | Start the store |
-| `npm run dev` | Start with auto-reload on file changes |
-| `npm run seed` | Reset the catalog to the demo products |
-| `npm run reset` | Wipe everything (orders, products) and re-seed |
-| `npm test` | Run all automated tests |
+Cada variação tem seu próprio `sku`, `price_cents` e `stock`, então você pode vender o mesmo
+modelo com preços e disponibilidades diferentes.
 
 ---
 
-## Testing the store locally (walkthrough)
+## Configuração (`.env`)
 
-Open <http://localhost:3000> and follow the buyer journey end to end. No real
-money moves — Stripe runs in local test mode.
+Copie `.env.example` para `.env` e ajuste:
 
-1. **Home** — hero, category tiles and featured products.
-2. **Shop** (`/shop`) — filter by category, search, change the sort order.
-3. **Product page** — pick a *Length & colour* variant, set the quantity and
-   click **Add to bag**. Sold-out variants are disabled.
-4. **Bag** (`/cart`) — change quantities, remove lines, see shipping and total.
-   Asking for more than the available stock is rejected with a clear message.
-5. **Checkout** (`/checkout`) — fill in the contact and shipping fields; the
-   order summary on the right updates live. Leave the email empty to see the
-   validation error.
-6. **Test payment** — you land on a simulated Stripe screen showing the test
-   card `4242 4242 4242 4242`. Click **Pay** to succeed, or **Simulate
-   decline** to test the failed-payment path (you are sent back to checkout).
-7. **Confirmation** (`/order/success`) — shows the order number (`KM-…`) and
-   the items. The bag is emptied.
-8. **Admin** (`/admin`, password `admin123`) — the dashboard shows the revenue
-   and the new order. Under **Orders** it is `paid`, and the stock of the
-   purchased variant dropped by the quantity bought.
-
-Useful URLs:
-
-| Page | URL |
-|---|---|
-| Store | `http://localhost:3000` |
-| Shop | `http://localhost:3000/shop` |
-| Product | `http://localhost:3000/product/seamless-clip-in-extensions` |
-| Bag | `http://localhost:3000/cart` |
-| Checkout | `http://localhost:3000/checkout` |
-| Admin | `http://localhost:3000/admin` |
-
-> The bag lives in a cookie, so a fresh browser window starts with an empty bag.
-> Orders and stock live in `data/store.db`. Run `npm run reset` to wipe
-> everything and start over from the demo catalog.
+| Variável | Padrão | Descrição |
+| --- | --- | --- |
+| `PORT` | `3000` | Porta HTTP. |
+| `BASE_URL` | `http://localhost:3000` | URL pública usada nos redirects do Stripe. |
+| `STORE_NAME` | `KAMILLA` | Nome da loja. |
+| `STORE_TAGLINE` | `Smartphones & Tecnologia` | Assinatura usada no SEO. |
+| `CURRENCY` | `brl` | Moeda (formatação pt-BR). |
+| `ADMIN_PASSWORD` | `admin123` | Senha do painel — **troque antes de publicar**. |
+| `STRIPE_SECRET_KEY` | *(vazio)* | Vazio = modo de teste local. |
+| `STRIPE_WEBHOOK_SECRET` | *(vazio)* | Segredo do webhook. |
+| `MOCK_PAYMENTS` | `true` | Força o modo simulado. |
+| `SHIPPING_FLAT_CENTS` | `2990` | Frete fixo em centavos (R$ 29,90). |
+| `FREE_SHIPPING_THRESHOLD_CENTS` | `29900` | Frete grátis a partir de R$ 299. |
+| `DATABASE_PATH` | `./data/store.db` | Arquivo SQLite. |
+| `SEED_ON_BOOT` | `true` | Popula o banco vazio na primeira subida. |
 
 ---
 
-## Configuration (`.env`)
+## Colocando o Stripe para valer
 
-Copy `.env.example` to `.env` and adjust:
+1. Crie uma conta em <https://stripe.com> e pegue as chaves em **Developers → API keys**.
+2. No `.env`, preencha `STRIPE_SECRET_KEY=sk_test_...` e defina `MOCK_PAYMENTS=false`.
+3. Configure o webhook em **Developers → Webhooks** apontando para:
+   `https://SEU_DOMINIO/webhook/stripe`
+   com o evento `checkout.session.completed`.
+4. Copie o `whsec_...` para `STRIPE_WEBHOOK_SECRET`.
+5. Ajuste `BASE_URL` para o domínio público (https).
+6. Teste com o cartão `4242 4242 4242 4242` (qualquer validade/CVC) e depois troque para as chaves
+   `sk_live_...`.
 
-| Variable | Purpose |
-|----------|---------|
-| `PORT` | Port to listen on (default `3000`) |
-| `BASE_URL` | Public URL — **must be your real https domain in production** (used for Stripe redirects) |
-| `STORE_NAME` / `STORE_TAGLINE` | Brand text in the header/footer |
-| `CURRENCY` | ISO currency, e.g. `usd`, `eur`, `gbp` |
-| `ADMIN_PASSWORD` | **Change this before going live** |
-| `STRIPE_SECRET_KEY` | `sk_test_…` or `sk_live_…` from Stripe |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_…` from the Stripe webhook you create |
-| `MOCK_PAYMENTS` | `true` = simulate payments locally, `false` = use real Stripe |
-| `SHIPPING_FLAT_CENTS` | Flat shipping in cents (e.g. `1500` = $15.00) |
-| `FREE_SHIPPING_THRESHOLD_CENTS` | Subtotal above which shipping is free (e.g. `15000` = $150) |
-| `DATABASE_PATH` | Where the SQLite file lives (default `./data/store.db`) |
+Sem chaves, tudo funciona no **modo simulado**: o pedido é criado, o estoque é validado e o
+pagamento é concluído localmente, sem cobrança real.
 
 ---
 
-## Going live with Stripe (international sales)
+## Deploy em produção
 
-Stripe is the recommended gateway for worldwide selling: cards, Apple Pay,
-Google Pay, ~135 currencies, and tax handling.
-
-1. **Create a Stripe account** at <https://dashboard.stripe.com/register> and
-   complete the business verification (this is a legal/identity step only you
-   can do).
-2. **Stay in Test mode first.** Copy your *test* secret key
-   (`sk_test_…`) from <https://dashboard.stripe.com/test/apikeys>.
-3. Put it in `.env` and turn mock mode off:
-   ```
-   STRIPE_SECRET_KEY=sk_test_xxxxxxxx
-   MOCK_PAYMENTS=false
-   BASE_URL=http://localhost:3000
-   ```
-   Restart, then run a real test purchase using card `4242 4242 4242 4242`,
-   any future expiry, any CVC. Verify the order appears as **paid** in the admin.
-4. **Create the webhook** (this is what reliably confirms payment):
-   - Dashboard → *Developers → Webhooks → Add endpoint*
-   - URL: `https://YOUR-DOMAIN/webhook/stripe`
-   - Events: `checkout.session.completed` and
-     `checkout.payment_intent.succeeded`
-   - Copy the signing secret (`whsec_…`) into `STRIPE_WEBHOOK_SECRET`.
-5. **Go live:** swap `sk_test_…` for `sk_live_…`, recreate the webhook on your
-   live domain, set `BASE_URL` to your https domain, and restart.
-
-> Without a webhook secret the endpoint accepts unsigned events (fine for local
-> testing). With a secret set, every request must carry a valid signature.
-
----
-
-## Deploying to production
-
-The app is a single Node process with a file database. **It needs a persistent
-disk**, so it is *not* suited to pure serverless platforms (Vercel, Netlify
-Functions) unless you move to an external database. Good homes: a small VPS,
-Render, Railway, or Fly.io with a volume.
-
-### Option A — Any VPS (Ubuntu) with systemd + Caddy
+### Opção A — VPS (Ubuntu) com systemd + Caddy
 
 ```bash
-# On the server (as root or a sudo user)
-apt update && apt install -y nodejs npm git caddy
-# make sure `node --version` is >= 22.5 (use nvm if not)
-git clone <your-repo> /var/www/kamilla && cd /var/www/kamilla
+# no servidor
+git clone https://github.com/zmove-digital/kamilla.git /var/www/kamilla
+cd /var/www/kamilla
 cp .env.example .env
-nano .env        # set BASE_URL, ADMIN_PASSWORD, Stripe keys
+# edite .env (ADMIN_PASSWORD, BASE_URL, Stripe…)
 npm run seed
 ```
 
-Create `/etc/systemd/system/kamilla.service`:
+Crie `/etc/systemd/system/kamilla.service`:
 
 ```ini
 [Unit]
@@ -205,139 +173,109 @@ After=network.target
 WorkingDirectory=/var/www/kamilla
 ExecStart=/usr/bin/node src/server.js
 Restart=always
-Environment=NODE_ENV=production
-User=www-data
+EnvironmentFile=/var/www/kamilla/.env
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 ```bash
-systemctl daemon-reload
 systemctl enable --now kamilla
 ```
 
-Create `/etc/caddy/Caddyfile` (Caddy gets you automatic HTTPS):
+E um `Caddyfile` simples para HTTPS automático:
 
 ```
-kamilla.com {
-    reverse_proxy localhost:3000
+kamilla.seudominio.com {
+    reverse_proxy 127.0.0.1:3000
 }
 ```
 
-```bash
-systemctl reload caddy
-```
-
-### Option B — Docker
+### Opção B — Docker
 
 ```bash
 docker build -t kamilla .
-docker run -d --name kamilla -p 3000:3000 \
-  -v kamilla-data:/app/data \
-  --env-file .env \
-  kamilla
+docker run -d -p 3000:3000 -v kamilla-data:/app/data --env-file .env kamilla
 ```
 
-Put a reverse proxy (Caddy/Nginx/Cloudflare Tunnel) in front for HTTPS.
-`/app/data` is the volume holding `store.db` — never deploy without it.
+> Monte um volume em `/app/data` para o SQLite sobreviver a reinícios.
 
-### Deploy checklist
+### Checklist antes de publicar
 
-- [ ] `ADMIN_PASSWORD` changed from the default
-- [ ] `BASE_URL` = your real `https://` domain
-- [ ] `MOCK_PAYMENTS=false` and live Stripe key in place
-- [ ] Webhook created and `STRIPE_WEBHOOK_SECRET` set
-- [ ] SQLite file on a **persistent volume**, backed up regularly
-  (`cp data/store.db backups/store-$(date +%F).db`)
-- [ ] HTTPS in front (Caddy/Nginx/Cloudflare)
+- [ ] Trocar `ADMIN_PASSWORD`.
+- [ ] Configurar `BASE_URL` com https.
+- [ ] Ativar o Stripe real e o webhook.
+- [ ] Fazer backup de `data/store.db`.
+- [ ] Revisar preços e estoque no admin.
 
 ---
 
-## Managing the store
+## Gerenciando a loja
 
-Log in at `/admin`:
+- **Produtos**: `/admin/products` → criar, editar, ocultar e excluir.
+- **Variações**: nome no formato `128GB · 8GB · Preto`, SKU único, preço e estoque.
+- **Pedidos**: `/admin/orders` → acompanhar itens, cliente, pagamento e mudar o status
+  (Pendente, Pago, Enviado, Cancelado, Falhou).
+- **Estoque baixo**: o painel lista variações com **≤ 3 unidades**.
 
-- **Dashboard** — revenue, paid/pending orders, low-stock alerts.
-- **Products** — create, edit, delete. Each product has one or more
-  **variants** (e.g. `20" · Natural Black`) with their own SKU, price and
-  **stock**. Editing stock here is how you manage inventory.
-- **Orders** — every order with items, customer, payment reference and status
-  (`pending → paid → fulfilled`, or `failed` / `cancelled`).
+### Usando fotos reais
 
-### Using real product photos
+As imagens dos produtos são geradas em SVG (mockup de celular) para a loja funcionar sem nenhum
+arquivo externo. Para usar fotos reais, basta soltar o arquivo em `public/images/` com o nome do
+slug do produto:
 
-The demo generates on-brand SVG placeholder images automatically at
-`/img/<name>.svg`. To replace any of them with a real photo you **don't need
-to change any code** — just drop a file into `public/images/` named after the
-image you want to replace. The store serves the real file when it exists and
-falls back to the generated placeholder when it doesn't.
+```
+public/images/iphone-16.jpg
+public/images/iphone-16-2.jpg
+public/images/iphone-16-3.jpg
+public/images/cat-Apple.jpg
+```
 
-Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.avif` (pick one; the
-first match wins in that order). Recommended dimensions: **1200×1500 (4:5)**
-for products, **1600×900** for the hero.
-
-| File to create in `public/images/`      | Replaces                                  |
-| --------------------------------------- | ----------------------------------------- |
-| `seamless-clip-in-extensions.jpg`       | Main photo of that product (card + page)  |
-| `seamless-clip-in-extensions-2.jpg`     | 2nd gallery thumbnail on the product page |
-| `seamless-clip-in-extensions-3.jpg`     | 3rd gallery thumbnail on the product page |
-| `cat-Clip-In.jpg`                       | Category tile (categories: `Clip-In`, `Tape-In`, `Bundles`, `Ponytail`, `Care`, `Accessories`) |
-| `hero-kamilla.jpg`                      | Home-page hero image                      |
-
-The names are the product **slugs** (the part after `/product/` in the URL).
-Current slugs: `seamless-clip-in-extensions`, `tape-in-extensions`,
-`luxe-sew-in-bundles`, `wrap-ponytail`, `clip-in-bangs`,
-`silk-repair-hair-kit`, `extension-brush`, `satin-sleep-bonnet`.
-
-You can also add a brand-new product from the admin panel and give it any
-slug, then place a matching file (`<slug>.jpg`) in `public/images/`.
+Extensões aceitas: `.jpg`, `.jpeg`, `.png`, `.webp`, `.avif`. A loja detecta automaticamente e
+passa a servir a foto no lugar do SVG (a galeria mostra as miniaturas `-2` e `-3` quando existem).
 
 ---
 
-## Project structure
+## Estrutura do projeto
 
 ```
-src/
-  config.js          # loads .env, exposes config
-  db.js              # SQLite schema + all data access (inventory-safe)
-  seed.js            # demo brand + catalog
-  server.js          # HTTP server, router, all routes
-  lib/
-    util.js          # cookies, money, parsing, escaping
-    images.js        # SVG placeholder generator
-    stripe.js        # Stripe REST client + webhook verification
-  views/
-    layout.js        # storefront shell
-    pages.js         # home / shop / product / cart / checkout / success
-    admin.js         # admin panel pages
-public/
-  styles.css         # storefront + admin styling
-  app.js             # cart, checkout and mock-payment client logic
-scripts/
-  seed.js            # npm run seed
-  reset.js           # npm run reset
-  test.js            # npm test  (54 tests)
-data/                # SQLite database (created at runtime, git-ignored)
+kamilla/
+├── index.html              # página de apresentação (GitHub Pages)
+├── package.json            # apenas scripts; nenhuma dependência
+├── .env.example            # modelo de configuração
+├── data/                   # SQLite (ignorado no git)
+├── public/
+│   ├── styles.css          # design system completo
+│   ├── app.js              # carrinho, seletores de variação, animações
+│   ├── logo.svg
+│   └── images/             # fotos reais opcionais
+├── scripts/
+│   ├── seed.js             # catálogo demo
+│   ├── reset.js            # reset do banco
+│   └── test.js             # testes de integração
+└── src/
+    ├── server.js           # rotas HTTP
+    ├── config.js           # .env + configurações
+    ├── db.js               # schema + estoque + pedidos
+    ├── seed.js             # catálogo (10 celulares)
+    ├── lib/                # util, imagens SVG, Stripe
+    └── views/              # layout, páginas e admin (SSR)
 ```
 
 ---
 
-## Security notes
+## Segurança
 
-- Passwords, Stripe keys and the webhook secret live only in `.env`
-  (git-ignored) — never commit them.
-- Card data never touches this server: Stripe Checkout is hosted by Stripe, so
-  the store stays out of PCI-DSS scope.
-- Admin sessions are httpOnly cookies; the admin password is checked
-  server-side.
-- Stock is decremented inside a single SQLite `BEGIN IMMEDIATE` transaction, so
-  two simultaneous buyers cannot oversell the last unit.
-- For higher traffic, add rate limiting and move the cart/session check to a
-  proper auth system.
+- Sessões de admin via cookie `HttpOnly` + `SameSite=Lax`.
+- Senha comparada com `crypto.timingSafeEqual`.
+- Webhook do Stripe validado por assinatura HMAC (quando o segredo está configurado).
+- Estoque descontado em transação atômica com verificação de disponibilidade.
+- Sem dependências npm = superfície de ataque mínima.
+
+Para produção, rode atrás de HTTPS (Caddy/Nginx) e troque a senha padrão.
 
 ---
 
-## License
+## Licença
 
-MIT — use it, rebrand it, sell with it.
+MIT.

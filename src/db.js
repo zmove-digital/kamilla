@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS orders (
   subtotal_cents INTEGER NOT NULL DEFAULT 0,
   shipping_cents INTEGER NOT NULL DEFAULT 0,
   total_cents    INTEGER NOT NULL DEFAULT 0,
-  currency       TEXT NOT NULL DEFAULT 'usd',
+  currency       TEXT NOT NULL DEFAULT 'brl',
   status         TEXT NOT NULL DEFAULT 'pending',
   payment_provider TEXT NOT NULL DEFAULT 'mock',
   payment_ref    TEXT,

@@ -1,9 +1,14 @@
-import { clearAll, seed } from '../src/seed.js';
+import { seedIfEmpty } from '../src/seed.js';
 import { config } from '../src/config.js';
 
-// Optional flags: --keep (add without wiping)
-const keep = process.argv.includes('--keep');
+// Safe by default: only fills an empty database. Use `npm run reset` to wipe and
+// recreate the demo catalog.
+const count = seedIfEmpty();
 
-if (!keep) clearAll();
-const count = seed();
-console.log(`Seeded ${count} products into ${config.databasePath}`);
+if (count) {
+  console.log(`Catálogo demo criado: ${count} produtos em ${config.databasePath}`);
+} else {
+  console.log(
+    `O banco já possui produtos — nada foi alterado.\nUse "npm run reset" para apagar tudo e recriar o catálogo demo.\nBanco: ${config.databasePath}`
+  );
+}

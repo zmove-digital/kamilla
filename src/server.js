@@ -181,7 +181,7 @@ route('GET', '/cart', (ctx) => {
 route('GET', '/checkout', (ctx) => {
   const id = getCartId(ctx.req);
   const cart = id ? store.getCart(id) : { items: [], subtotal_cents: 0, count: 0 };
-  const message = ctx.query.get('cancelled') ? 'Your payment was cancelled. Your bag is still saved.' : '';
+  const message = ctx.query.get('cancelled') ? 'Seu pagamento foi cancelado. Sua sacola continua salva.' : '';
   sendHtml(ctx.res, 200, checkoutPage({ cart, cartCount: cart.count, message }));
 });
 
@@ -243,7 +243,7 @@ route('POST', '/api/cart', async (ctx) => {
     } else {
       cart = store.getCart(id);
     }
-    sendJson(ctx.res, 200, { ok: true, cart, message: 'Bag updated' });
+    sendJson(ctx.res, 200, { ok: true, cart, message: 'Sacola atualizada' });
   } catch (err) {
     const status = err.code === 'INSUFFICIENT_STOCK' ? 409 : 400;
     sendJson(ctx.res, status, { ok: false, error: err.message, code: err.code, available: err.available });
@@ -257,22 +257,25 @@ route('POST', '/api/cart', async (ctx) => {
 route('POST', '/api/checkout', async (ctx) => {
   const id = getCartId(ctx.req);
   const cart = id ? store.getCart(id) : { items: [] };
-  if (!cart.items.length) return sendJson(ctx.res, 400, { ok: false, error: 'Your bag is empty.' });
+  if (!cart.items.length) return sendJson(ctx.res, 400, { ok: false, error: 'Sua sacola está vazia.' });
 
   const body = await readJson(ctx.req);
   const email = String(body.email || '').trim();
   const fullName = String(body.full_name || '').trim();
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    return sendJson(ctx.res, 400, { ok: false, error: 'Please enter a valid email address.' });
+    return sendJson(ctx.res, 400, { ok: false, error: 'Digite um e-mail válido.' });
   }
-  if (!fullName) return sendJson(ctx.res, 400, { ok: false, error: 'Please enter your full name.' });
+  if (!fullName) return sendJson(ctx.res, 400, { ok: false, error: 'Digite seu nome completo.' });
 
   const address = [body.address, body.city, body.zip, body.country].filter(Boolean).join(', ');
 
   // Validate stock before creating the order.
   for (const it of cart.items) {
     if (!it.available) {
-      return sendJson(ctx.res, 409, { ok: false, error: `Not enough stock for ${it.product_name} (${it.variant_name}).` });
+      return sendJson(ctx.res, 409, {
+        ok: false,
+        error: `Estoque insuficiente para ${it.product_name} (${it.variant_name}).`,
+      });
     }
   }
 
@@ -292,7 +295,7 @@ route('POST', '/api/checkout', async (ctx) => {
       return sendJson(ctx.res, 200, { ok: true, url: session.url, order: order.number });
     } catch (err) {
       store.markOrderFailed(order.id, 'stripe_session_error');
-      return sendJson(ctx.res, 502, { ok: false, error: `Payment provider error: ${err.message}` });
+      return sendJson(ctx.res, 502, { ok: false, error: `Erro no processamento do pagamento: ${err.message}` });
     }
   }
 
@@ -304,8 +307,8 @@ route('POST', '/api/checkout', async (ctx) => {
 route('POST', '/api/mock-pay', async (ctx) => {
   const body = await readJson(ctx.req);
   const order = store.getOrder(body.order);
-  if (!order) return sendJson(ctx.res, 404, { ok: false, error: 'Order not found' });
-  if (config.stripeEnabled) return sendJson(ctx.res, 400, { ok: false, error: 'Mock pay disabled in live mode' });
+  if (!order) return sendJson(ctx.res, 404, { ok: false, error: 'Pedido não encontrado' });
+  if (config.stripeEnabled) return sendJson(ctx.res, 400, { ok: false, error: 'Pagamento de teste desativado no modo real' });
 
   const cartId = getCartId(ctx.req);
 
@@ -335,7 +338,7 @@ route('POST', '/webhook/stripe', async (ctx) => {
   // Only enforce signature when a webhook secret is explicitly configured.
   if (config.stripeWebhookSecret) {
     if (!sig || !verifyWebhook(rawStr, sig)) {
-      return sendJson(ctx.res, 400, { ok: false, error: 'Invalid signature' });
+      return sendJson(ctx.res, 400, { ok: false, error: 'Assinatura inválida' });
     }
   }
 
@@ -343,7 +346,7 @@ route('POST', '/webhook/stripe', async (ctx) => {
   try {
     event = JSON.parse(rawStr);
   } catch {
-    return sendJson(ctx.res, 400, { ok: false, error: 'Invalid payload' });
+    return sendJson(ctx.res, 400, { ok: false, error: 'Payload inválido' });
   }
 
   if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
@@ -368,7 +371,7 @@ route('POST', '/webhook/stripe', async (ctx) => {
 
 route('GET', '/admin', (ctx) => {
   if (isAdmin(ctx.req)) return sendRedirect(ctx.res, '/admin/dashboard');
-  const error = ctx.query.get('error') === '1' ? 'Incorrect password.' : '';
+  const error = ctx.query.get('error') === '1' ? 'Senha incorreta.' : '';
   sendHtml(ctx.res, 200, adminLoginPage({ error }));
 });
 
@@ -460,7 +463,7 @@ route('POST', '/admin/products', async (ctx) => {
   const data = readProductForm(form);
   const variants = readVariants(form);
   if (!data.name || !variants.length) {
-    return sendHtml(ctx.res, 400, adminProductFormPage({ product: null, error: 'Name and at least one variant are required.' }));
+    return sendHtml(ctx.res, 400, adminProductFormPage({ product: null, error: 'Nome e ao menos uma variação são obrigatórios.' }));
   }
   try {
     const id = store.createProduct(data);
@@ -554,7 +557,7 @@ async function imageRoute(ctx, name) {
 route('GET', '/favicon.svg', (ctx) => {
   ctx.res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' });
   ctx.res.end(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="14" fill="#1a1a1a"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="34" fill="#c9a27e">K</text></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 48 48"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".52" stop-color="#6366f1"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><rect width="48" height="48" rx="14" fill="url(#g)"/><path d="M16 13v22M16 24l9-11M16 24l10 11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="35" cy="14" r="2.6" fill="#fff" fill-opacity=".9"/></svg>`
   );
 });
 
@@ -590,7 +593,7 @@ export function createApp() {
       }
 
       // Static assets
-      if (req.method === 'GET' && (pathname.startsWith('/styles.css') || pathname.startsWith('/app.js') || pathname.startsWith('/images/'))) {
+      if (req.method === 'GET' && (pathname.startsWith('/styles.css') || pathname.startsWith('/app.js') || pathname.startsWith('/images/') || pathname.startsWith('/logo.svg'))) {
         const ok = await serveStatic({ req, res }, pathname);
         if (ok) return;
       }
@@ -617,7 +620,7 @@ export function createApp() {
       await matched.handler(ctx);
     } catch (err) {
       console.error('[error]', err);
-      if (!res.headersSent) sendJson(res, 500, { ok: false, error: 'Internal server error' });
+      if (!res.headersSent) sendJson(res, 500, { ok: false, error: 'Erro interno do servidor' });
     }
   });
 
@@ -629,9 +632,9 @@ const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv
 if (isMain || process.env.START_SERVER === '1') {
   const server = createApp();
   server.listen(config.port, () => {
-    console.log(`\n  ${config.storeName} store running`);
+    console.log(`\n  ${config.storeName} · loja de celulares no ar`);
     console.log(`  → http://localhost:${config.port}`);
-    console.log(`  → Admin: http://localhost:${config.port}/admin`);
-    console.log(`  → Stripe: ${config.stripeEnabled ? 'LIVE keys configured' : 'local TEST mode (no real charges)'}\n`);
+    console.log(`  → Painel: http://localhost:${config.port}/admin`);
+    console.log(`  → Stripe: ${config.stripeEnabled ? 'chaves REAIS configuradas' : 'modo TESTE local (sem cobranças reais)'}\n`);
   });
 }
