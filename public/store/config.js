@@ -20,8 +20,11 @@ try {
   /* localStorage indisponível ou JSON inválido */
 }
 
-export const SUPABASE_URL = runtime.url || '';
-export const SUPABASE_ANON_KEY = runtime.key || '';
+// Projeto Supabase "kamilateste". A publishable key é pública por design.
+// Use `??` para que um override explícito com string vazia force o modo demo.
+export const SUPABASE_URL = runtime.url ?? 'https://awzutjdfzpeeyfdjhdqf.supabase.co';
+export const SUPABASE_ANON_KEY =
+  runtime.key ?? 'sb_publishable_9UvonVYso4Q8FKpdFdvcYQ_NApcyMqq';
 
 export const STORE = {
   name: 'KAMILLA',

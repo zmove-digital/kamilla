@@ -1,19 +1,44 @@
 // Smoke test do frontend estático usando Brave/Chrome headless + CDP (sem deps).
 //
-//   node scripts/smoke-static.js
+//   node scripts/smoke-static.js          (auto: real se configurado, senão demo)
+//   node scripts/smoke-static.js --demo   (força o modo demonstração)
 //   node scripts/smoke-static.js --live   (sobe o mock do Supabase e testa checkout/admin)
+//   node scripts/smoke-static.js --real   (usa o Supabase real do config.js, sem criar pedido)
 //
 // Requer o servidor estático em http://localhost:5180 (npm run serve:static).
 import { spawn, execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 9333;
 const BASE = process.env.BASE_URL || 'http://localhost:5180/';
 const LIVE = process.argv.includes('--live') || process.env.MOCK_SUPABASE === '1';
+const DEMO_FLAG = process.argv.includes('--demo') || process.env.DEMO_MODE === '1';
+const REAL_FLAG = process.argv.includes('--real') || process.env.REAL_SUPABASE === '1';
+if (LIVE && (DEMO_FLAG || REAL_FLAG)) {
+  console.error('Use --live, --demo ou --real (um por vez).');
+  process.exit(1);
+}
+if (DEMO_FLAG && REAL_FLAG) {
+  console.error('Use --demo ou --real, não os dois.');
+  process.exit(1);
+}
+
+// Sem flag explícita: usa o Supabase real quando o config.js tiver URL/chave.
+let configured = false;
+try {
+  const config = await import(
+    `${pathToFileURL(join(ROOT, 'public', 'store', 'config.js')).href}?t=${Date.now()}`
+  );
+  configured = Boolean(config.SUPABASE_URL && config.SUPABASE_ANON_KEY);
+} catch {
+  configured = false;
+}
+const REAL = REAL_FLAG || (!LIVE && !DEMO_FLAG && configured);
+const DEMO = !LIVE && !REAL;
 const MOCK_PORT = 54398;
 const MOCK_URL = `http://localhost:${MOCK_PORT}`;
 const CANDIDATES = [
@@ -188,21 +213,25 @@ try {
     await send('Page.addScriptToEvaluateOnNewDocument', {
       source: `window.KAMILLA_CONFIG = { url: ${JSON.stringify(MOCK_URL)}, key: 'mock-anon-key' };`,
     });
+  } else if (DEMO) {
+    await send('Page.addScriptToEvaluateOnNewDocument', {
+      source: `window.KAMILLA_CONFIG = { url: '', key: '' };`,
+    });
   }
 
   await send('Page.navigate', { url: BASE });
   await waitFor('window.KAMILLA_READY === true', 'home');
   await sleep(400);
 
-  console.log(`\n[home · ${LIVE ? 'Supabase (mock)' : 'modo demo'}]`);
+  console.log(`\n[home · ${LIVE ? 'Supabase (mock)' : REAL ? 'Supabase real' : 'modo demo'}]`);
   check('título da página', (await evaluate('document.title')).includes('KAMILLA'));
   check('hero renderizado', await evaluate("!!document.querySelector('.hero h1')"));
   check('produtos na home', (await evaluate("document.querySelectorAll('.product-card').length")) >= 6);
   check('contador de sacola presente', await evaluate("!!document.getElementById('cart-count')"));
   check('sem overflow horizontal (1440)', await evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'));
   check(
-    LIVE ? 'banner demo escondido' : 'banner demo visível',
-    (await evaluate("document.getElementById('demo-banner').hidden")) === LIVE
+    LIVE || REAL ? 'banner demo escondido' : 'banner demo visível',
+    (await evaluate("document.getElementById('demo-banner').hidden")) === (LIVE || REAL)
   );
 
   console.log('\n[produto]');
@@ -305,6 +334,17 @@ try {
     await evaluate("document.querySelector('[data-admin-logout]').click()");
     await waitFor("!!document.querySelector('#login-form')", 'logout do admin');
     check('logout volta para o login', await evaluate("!!document.querySelector('#login-form')"));
+  } else if (REAL) {
+    console.log('\n[checkout]');
+    await go('#/checkout', "!!document.querySelector('#checkout-form')");
+    check('formulário de checkout', await evaluate("!!document.querySelector('[name=email]')"));
+    check('checkout habilitado no Supabase real', await evaluate("!document.querySelector('#checkout-form button').disabled"));
+    check('sem aviso de demonstração', (await evaluate("!!document.querySelector('.alert')")) === false);
+
+    console.log('\n[admin]');
+    await go('#/admin', "!!document.querySelector('.login-card')");
+    check('tela de login do admin', await evaluate("!!document.querySelector('#login-form')"));
+    check('login habilitado no Supabase real', await evaluate("!document.querySelector('#login-form button').disabled"));
   } else {
     console.log('\n[checkout]');
     await go('#/checkout', "!!document.querySelector('#checkout-form')");
@@ -341,7 +381,11 @@ try {
     failures.forEach((failure) => console.log(`  - ${failure}`));
     process.exitCode = 1;
   } else {
-    console.log(`✔ Smoke test do frontend estático passou${LIVE ? ' (com Supabase mock)' : ''}.`);
+    console.log(
+      `✔ Smoke test do frontend estático passou${
+        LIVE ? ' (com Supabase mock)' : REAL ? ' (com Supabase real)' : ''
+      }.`
+    );
   }
 } catch (error) {
   console.error('Erro no smoke test:', error.message);

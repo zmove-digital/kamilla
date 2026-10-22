@@ -19,8 +19,9 @@
     "demo:data": "node scripts/generate-demo-data.js",
     "mock:supabase": "node scripts/mock-supabase.js",
     "test:api": "node scripts/test-api.js",
-    "test:smoke": "node scripts/smoke-static.js",
-    "test:smoke:live": "node scripts/smoke-static.js --live"
+    "test:smoke": "node scripts/smoke-static.js --demo",
+    "test:smoke:live": "node scripts/smoke-static.js --live",
+    "test:smoke:real": "node scripts/smoke-static.js --real"
   },
   "keywords": [
     "ecommerce",

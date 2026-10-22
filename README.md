@@ -11,9 +11,9 @@ dependência npm**.
 - **Admin:** <https://zmove-digital.github.io/kamilla/#/admin>
 - **Apresentação:** [`apresentacao.html`](apresentacao.html)
 
-> Enquanto o Supabase não estiver configurado, a loja abre em **modo demonstração**: catálogo
+> Se as chaves do Supabase estiverem vazias, a loja abre em **modo demonstração**: catálogo
 > completo com dados locais, checkout e login do admin desabilitados com um aviso. É ideal para
-> aprovar o visual pelo celular antes de conectar o banco real.
+> aprovar o visual antes de conectar o banco real.
 
 ---
 
@@ -60,7 +60,7 @@ Supabase
 
 ---
 
-## Rodar localmente (modo demonstração)
+## Rodar localmente
 
 Requisito: **Node.js 22.5+**. Não precisa de `npm install`.
 
@@ -68,10 +68,27 @@ Requisito: **Node.js 22.5+**. Não precisa de `npm install`.
 npm run serve:static
 ```
 
-Abra <http://localhost:5180>. A loja usa `public/store/demo-data.js` e mostra o banner de
-demonstração.
+Abra <http://localhost:5180>. A loja usa o Supabase configurado em
+`public/store/config.js` (projeto `kamilateste`).
 
-Para testar o modo real localmente, suba o **mock do Supabase** em outro terminal:
+### Forçar o modo demonstração
+
+No console do navegador:
+
+```js
+localStorage.setItem('kamilla_config_override', JSON.stringify({ url: '', key: '' }));
+```
+
+Recarregue a página. A loja passa a usar `public/store/demo-data.js` e mostra o banner de
+demonstração. Para voltar ao Supabase real:
+
+```js
+localStorage.removeItem('kamilla_config_override');
+```
+
+### Testar contra o mock do Supabase
+
+Suba o mock em outro terminal:
 
 ```bash
 npm run mock:supabase
@@ -84,7 +101,7 @@ admin: zmove.digital@gmail.com
 senha: admin123
 ```
 
-Então aponte `public/store/config.js` para o mock (ou use o console do navegador):
+Aponte o navegador para ele:
 
 ```js
 localStorage.setItem(
@@ -93,11 +110,9 @@ localStorage.setItem(
 );
 ```
 
-Recarregue a página. Para voltar ao modo demonstração, rode
-`localStorage.removeItem('kamilla_config_override')` e recarregue.
+Recarregue a página. Depois, remova o override para voltar ao Supabase real.
 
-> Esse override é opcional e serve apenas para desenvolvimento. Em produção, preencha o
-> `config.js` diretamente.
+> Esses overrides são opcionais e servem apenas para desenvolvimento/testes.
 
 ---
 
@@ -178,6 +193,7 @@ simples tradicional — útil para produtos cadastrados manualmente.
 | `npm run test:api` | 23 verificações da camada de dados contra o mock. |
 | `npm run test:smoke` | Smoke test do frontend em modo demonstração (headless). |
 | `npm run test:smoke:live` | Smoke test completo com checkout, pagamento e admin (mock). |
+| `npm run test:smoke:real` | Smoke test contra o Supabase real configurado (não cria pedido). |
 | `npm test` | Suíte do app Node/SQLite legado (57 verificações). |
 | `npm start` | Sobe o app Node/SQLite legado em `http://localhost:3000`. |
 | `npm run seed` | Cria o catálogo demo no SQLite (se estiver vazio). |
