@@ -14,6 +14,7 @@
     "reset": "node scripts/reset.js",
     "test": "node scripts/test.js",
     "serve:static": "node scripts/serve-static.js",
+    "package:static": "node scripts/package-static.js",
     "images:static": "node scripts/generate-static-images.js",
     "supabase:seed": "node scripts/generate-supabase-seed.js",
     "demo:data": "node scripts/generate-demo-data.js",

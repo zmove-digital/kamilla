@@ -189,6 +189,7 @@ simples tradicional — útil para produtos cadastrados manualmente.
 | Comando | O que faz |
 | --- | --- |
 | `npm run serve:static` | Serve a SPA em `http://localhost:5180`. |
+| `npm run package:static` | Gera `dist/kamilla-hospedagem/` + `.zip` para outra hospedagem. |
 | `npm run mock:supabase` | Sobe o Supabase falso para testar checkout/admin. |
 | `npm run test:api` | 23 verificações da camada de dados contra o mock. |
 | `npm run test:smoke` | Smoke test do frontend em modo demonstração (headless). |
@@ -235,6 +236,7 @@ kamilla/
 │   └── README.md               # guia de configuração do projeto
 ├── scripts/
 │   ├── serve-static.js         # servidor local da SPA
+│   ├── package-static.js       # gera o pacote de upload para hospedagem
 │   ├── mock-supabase.js        # Supabase falso para testes
 │   ├── test-api.js             # testes da camada de dados
 │   ├── smoke-static.js         # testes de UI headless
@@ -243,6 +245,81 @@ kamilla/
 │   └── generate-demo-data.js
 └── src/                        # app Node/SQLite legado (SSR)
 ```
+
+---
+
+## Hospedar em outra hospedagem
+
+O site é uma **SPA estática**. O GitHub Pages já o publica; o banco, o login e as RPCs ficam no
+**Supabase**, que é um serviço separado. Por isso ele funciona em qualquer hospedagem estática:
+Hostinger, cPanel, Netlify, Vercel, Cloudflare Pages, etc.
+
+### Arquivos que precisam ser enviados
+
+Envie **somente** estes arquivos, mantendo a estrutura de pastas:
+
+```text
+index.html
+apresentacao.html          (opcional)
+public/
+├── styles.css
+├── logo.svg
+├── favicon.svg
+├── images/                (todos os SVGs)
+└── store/
+    ├── config.js
+    ├── api.js
+    ├── app.js
+    ├── admin.js
+    ├── pages.js
+    ├── cart.js
+    ├── ui.js
+    ├── store.css
+    └── demo-data.js
+```
+
+**Não precisa enviar:** `src/`, `scripts/`, `supabase/`, `data/`, `package.json`, `README.md`,
+`Dockerfile`, `.env.example` ou `node_modules/`. O `public/app.js` é do app SSR legado e também
+não é usado pela loja estática.
+
+### Gerar o pacote pronto
+
+```bash
+npm run package:static
+```
+
+Isso cria:
+
+- `dist/kamilla-hospedagem/` — os arquivos soltos;
+- `dist/kamilla-hospedagem.zip` — o zip para enviar pelo painel da hospedagem.
+
+No painel (Hostinger/cPanel), envie o **conteúdo** da pasta para `public_html/` ou para a raiz do
+site. Se preferir, envie o zip e use “Extrair” no Gerenciador de Arquivos.
+
+> Preserve a pasta `public/` exatamente como está. O `index.html` referencia
+> `./public/styles.css`, `./public/store/app.js` e as imagens por caminhos relativos.
+
+### Funciona em raiz ou subpasta
+
+O site usa **hash routing** (`#/produto/iphone-16`). Não precisa configurar rewrite, `.htaccess`
+ou regra de SPA. Pode ficar em:
+
+- `https://seudominio.com/`
+- `https://seudominio.com/loja/`
+
+Basta colocar o `index.html` na pasta correspondente. Ative **HTTPS** no painel da hospedagem.
+
+### GitHub e Supabase
+
+- O **GitHub Pages** suporta este site: ele só entrega HTML, CSS, JavaScript e imagens.
+- O **Supabase** não é hospedado pelo GitHub; ele roda como backend externo, acessado pelo
+  navegador via HTTPS com a chave pública (`publishable`).
+- O GitHub Pages **não executa Node.js/PHP** nem guarda segredos. Isso não é necessário para a
+  loja: catálogo, carrinho, checkout, login e pedidos usam Supabase.
+- Pagamento real (Mercado Pago/Stripe) entrará depois como **Edge Function no Supabase**, não no
+  GitHub Pages.
+- Domínio próprio: aponte o DNS para o GitHub Pages ou para a nova hospedagem. O código não muda;
+  o Supabase continua o mesmo.
 
 ---
 
