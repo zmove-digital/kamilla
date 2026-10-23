@@ -268,15 +268,51 @@ function matches(p, { category = '', search = '' } = {}) {
 // Catálogo
 // ---------------------------------------------------------------------------
 
+// O catálogo público muda pouco e é consultado a cada navegação. Guardamos por
+// alguns segundos para o menu não refazer a viagem até o Supabase a cada clique.
+// Estoque/pedidos continuam sendo validados no servidor no fechamento da compra.
+const CATALOG_TTL_MS = 30_000;
+let catalogCache = { products: null, expiresAt: 0 };
+let catalogPromise = null;
+let catalogVersion = 0;
+
+export function invalidateCatalog() {
+  catalogVersion += 1;
+  catalogCache = { products: null, expiresAt: 0 };
+  catalogPromise = null;
+}
+
+async function fetchCatalog() {
+  const rows = await request('products?select=*,variants(*)&order=id.asc');
+  return (rows || []).map(normalizeProduct);
+}
+
 export async function listProducts({ includeInactive = false, category = '', search = '' } = {}) {
   let products;
   if (isDemo) {
     products = demoCatalog();
-  } else {
+  } else if (includeInactive) {
     const rows = await request('products?select=*,variants(*)&order=id.asc', {
-      auth: includeInactive,
+      auth: true,
     });
     products = (rows || []).map(normalizeProduct);
+  } else if (catalogCache.products && Date.now() < catalogCache.expiresAt) {
+    products = catalogCache.products;
+  } else {
+    if (!catalogPromise) {
+      const version = catalogVersion;
+      catalogPromise = fetchCatalog()
+        .then((items) => {
+          if (version === catalogVersion) {
+            catalogCache = { products: items, expiresAt: Date.now() + CATALOG_TTL_MS };
+          }
+          return items;
+        })
+        .finally(() => {
+          if (version === catalogVersion) catalogPromise = null;
+        });
+    }
+    products = await catalogPromise;
   }
 
   return products
@@ -364,10 +400,12 @@ export async function payOrder(numberValue, outcome = 'success') {
   if (isDemo) {
     throw new ApiError('Modo demonstração: pagamento indisponível.');
   }
-  return request('rpc/pay_order', {
+  const result = await request('rpc/pay_order', {
     method: 'POST',
     body: { p_number: numberValue, p_outcome: outcome },
   });
+  invalidateCatalog();
+  return result;
 }
 
 export async function getOrderStatus(numberValue) {
@@ -395,11 +433,13 @@ export async function getAdminOrders() {
 
 export async function setOrderStatus(numberValue, status) {
   if (isDemo) throw new ApiError('Modo demonstração: admin indisponível.');
-  return request('rpc/set_order_status', {
+  const result = await request('rpc/set_order_status', {
     method: 'POST',
     auth: true,
     body: { p_number: numberValue, p_status: status },
   });
+  invalidateCatalog();
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -414,6 +454,7 @@ export async function createProduct(row) {
     body: row,
     prefer: 'return=representation',
   });
+  invalidateCatalog();
   return data?.[0] ? normalizeProduct(data[0]) : null;
 }
 
@@ -425,12 +466,14 @@ export async function updateProduct(id, patch) {
     body: patch,
     prefer: 'return=representation',
   });
+  invalidateCatalog();
   return data?.[0] ? normalizeProduct(data[0]) : null;
 }
 
 export async function deleteProduct(id) {
   if (isDemo) throw new ApiError('Modo demonstração: admin indisponível.');
   await request(`products?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', auth: true });
+  invalidateCatalog();
 }
 
 export async function createVariant(row) {
@@ -441,6 +484,7 @@ export async function createVariant(row) {
     body: row,
     prefer: 'return=representation',
   });
+  invalidateCatalog();
   return data?.[0] ? normalizeVariant(data[0]) : null;
 }
 
@@ -452,12 +496,14 @@ export async function updateVariant(id, patch) {
     body: patch,
     prefer: 'return=representation',
   });
+  invalidateCatalog();
   return data?.[0] ? normalizeVariant(data[0]) : null;
 }
 
 export async function deleteVariant(id) {
   if (isDemo) throw new ApiError('Modo demonstração: admin indisponível.');
   await request(`variants?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', auth: true });
+  invalidateCatalog();
 }
 
 export async function deleteVariantsExcept(productId, keepIds) {
@@ -467,6 +513,7 @@ export async function deleteVariantsExcept(productId, keepIds) {
     ? `product_id=eq.${encodeURIComponent(productId)}&id=not.in.(${ids.join(',')})`
     : `product_id=eq.${encodeURIComponent(productId)}`;
   await request(`variants?${filter}`, { method: 'DELETE', auth: true });
+  invalidateCatalog();
 }
 
 // Pequena espera usada pelos testes manuais do modo demo.

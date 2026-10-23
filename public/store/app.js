@@ -7,7 +7,6 @@
 import {
   getAdminOrders,
   getOrderStatus,
-  getProduct,
   getProductById,
   getSession,
   isAdminUser,
@@ -95,8 +94,7 @@ function finish() {
   window.KAMILLA_READY = true;
 }
 
-async function relatedProducts(product) {
-  const all = await listProducts();
+function relatedProducts(product, all) {
   const same = all.filter((item) => item.slug !== product.slug && item.category === product.category);
   const others = all.filter((item) => item.slug !== product.slug && item.category !== product.category);
   return [...same, ...others].slice(0, 4);
@@ -117,13 +115,13 @@ async function routeShop(params) {
 }
 
 async function routeProduct(slug) {
-  const product = await getProduct(slug);
+  const products = await listProducts();
+  const product = products.find((item) => item.slug === slug);
   if (!product) {
     mount(notFoundPage(), 'Produto não encontrado');
     return;
   }
-  const related = await relatedProducts(product);
-  mount(productPage({ product, related }), product.name);
+  mount(productPage({ product, related: relatedProducts(product, products) }), product.name);
   bindProductPage({ product });
 }
 
