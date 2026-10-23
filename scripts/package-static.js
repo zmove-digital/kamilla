@@ -47,21 +47,28 @@ copy('public/store');
 rmSync(join(OUT, 'public', 'app.js'), { force: true });
 rmSync(join(OUT, 'public', 'images', '.gitkeep'), { force: true });
 
-execFileSync(
-  'powershell.exe',
-  [
-    '-NoProfile',
-    '-NonInteractive',
-    '-Command',
-    `Compress-Archive -Path '${OUT.replace(/'/g, "''")}\\*' -DestinationPath '${ZIP.replace(/'/g, "''")}' -Force`,
-  ],
-  { stdio: 'inherit' }
-);
+// O zip é um extra para Windows/PowerShell. Em builds Linux (Cloudflare Pages,
+// Netlify etc.) a pasta já é suficiente; não falhamos o build por causa do zip.
+let zipSize = 0;
+try {
+  execFileSync(
+    'powershell.exe',
+    [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      `Compress-Archive -Path '${OUT.replace(/'/g, "''")}\\*' -DestinationPath '${ZIP.replace(/'/g, "''")}' -Force`,
+    ],
+    { stdio: 'inherit' }
+  );
+  zipSize = statSync(ZIP).size;
+} catch {
+  console.warn('Aviso: zip não gerado (PowerShell indisponível). Use a pasta gerada.');
+}
 
-const zipSize = statSync(ZIP).size;
 console.log('');
 console.log('Pacote estático gerado:');
 console.log(`  Pasta: ${OUT}`);
-console.log(`  Zip:   ${ZIP} (${(zipSize / 1024).toFixed(1)} KB)`);
+if (zipSize) console.log(`  Zip:   ${ZIP} (${(zipSize / 1024).toFixed(1)} KB)`);
 console.log('');
 console.log('Envie o CONTEÚDO da pasta (ou o zip) para public_html/ ou para a raiz do site.');
